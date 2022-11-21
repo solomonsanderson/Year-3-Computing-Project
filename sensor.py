@@ -59,11 +59,10 @@ class right_sensor():
         Returns: 
         1 or 0: returns 1 if inside the sensor, or 0 if outside.'''
 
+        index = np.where((((5.1 < x) & (x < 33.26)) & ((-5.1 < y) & (y < 33.51))) | (((-5.1 < x) & (x < 37.41)) & ((-33.51 < y) & (y < -5.1))))
+        hits_y, hits_x = y[index], x[index]
 
-        if ((5.1 < x < 33.26) and (-5.1 < y < 33.51)) or ((-5.1 < x < 37.41) and (-33.51 < y < -5.1)):
-            return 1
-        else:
-            return 0
+        return hits_y, hits_x
 
 
 class left_sensor():
@@ -80,44 +79,43 @@ class left_sensor():
         
         Returns: 
         1 or 0: returns 1 if inside the sensor, or 0 if outside.'''
-
-
-        if ((-33.26 < x < -5.1) and (-33.51 < y < 5.1)) or ((-37.41 < x < 5.1) and (5.1 < y < 33.51)):
-            return 1
-        else:
-            return 0
-
+        # print(x)
+        index = np.where((((-33.26 < x) & (x < -5.1)) & ((-33.51 < y) & (y < 5.1))) | (((-37.41 < x) & (x < 5.1)) & ((5.1 < y) & (y < 33.51))))
+        hits_y, hits_x = y[index], x[index]
+        
+        return hits_y, hits_x
+        
 
 if __name__ == "__main__":
     print(right_sensor(-272).in_sensor(20, 67))  # should produce outside
     print(right_sensor(-272).in_sensor(-7, -20))  # should produce inside
     print(left_sensor(-272).in_sensor(-7, -20))
-    fig, ax = plt.subplots(1)
-    plot_sensor(-5, -20, ax)
+    # fig, ax = plt.subplots(1)
+    # plot_sensor(-5, -20, ax)
 
 
-    ax3d = plt.figure().add_subplot(projection="3d")
+    # ax3d = plt.figure().add_subplot(projection="3d")
     # ax3d.plot_surface(np.array([-33.26, -5.1]), np.array([-33.51, 5.1]), np.array([-272.0, -252]))
     # Create axis
 
-    # # x, y, z = np.indices((35, 40, 200))
-    # print(x,y,z)
-    r_x = [-5.1, 37.41]
-    r_y = [-33.26, -5.1]
-    r_z = [-0.25, 0.25]
-    y = np.arange(-35, 35)
-    x = np.arange(-40, 40)
-    # z = np.arange(np.min(z_left_sensors), np.max(z_right_sensors))
-    z = np.arange(-200, 200)
+    # # # x, y, z = np.indices((35, 40, 200))
+    # # print(x,y,z)
+    # r_x = [-5.1, 37.41]
+    # r_y = [-33.26, -5.1]
+    # r_z = [-0.25, 0.25]
+    # y = np.arange(-35, 35)
+    # x = np.arange(-40, 40)
+    # # z = np.arange(np.min(z_left_sensors), np.max(z_right_sensors))
+    # z = np.arange(-200, 200)
 
-    print(combinations(np.array(list(product(r_x, r_y, r_z))), 2))
+    # print(combinations(np.array(list(product(r_x, r_y, r_z))), 2))
 
-    for s, e in combinations(np.array(list(product(r_x, r_y, r_z))), 2):
-        if np.sum(np.abs(s-e)) == r_x[1]-r_x[0]:
-            ax3d.plot3D(*zip(s, e), color="green")
-        elif np.sum(np.abs(s-e)) == r_y[1]-r_y[0]:
-            ax3d.plot3D(*zip(s, e), color="green")
-        elif np.sum(np.abs(s-e)) == r_z[1]-r_z[0]:
-            ax3d.plot3D(*zip(s, e), color="green")
+    # for s, e in combinations(np.array(list(product(r_x, r_y, r_z))), 2):
+    #     if np.sum(np.abs(s-e)) == r_x[1]-r_x[0]:
+    #         ax3d.plot3D(*zip(s, e), color="green")
+    #     elif np.sum(np.abs(s-e)) == r_y[1]-r_y[0]:
+    #         ax3d.plot3D(*zip(s, e), color="green")
+    #     elif np.sum(np.abs(s-e)) == r_z[1]-r_z[0]:
+    #         ax3d.plot3D(*zip(s, e), color="green")
 
-    plt.show()
+    # plt.show()

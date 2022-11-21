@@ -2,6 +2,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 from sensor import left_sensor, right_sensor
 from particle import particle
 from sensor import plot_sensor
@@ -18,10 +20,12 @@ class velo:
         self.zs = np.concatenate([left_sensor_z, right_sensor_z])
 
 
-        for z in range(len(left_sensor_z)):
+        for z in self.left_sensor_z:
             l_sensor = left_sensor(z)
-            r_sensor = right_sensor(z)
             self.l_sensors.append(l_sensor)
+
+        for z in self.right_sensor_z:
+            r_sensor = right_sensor(z)
             self.r_sensors.append(r_sensor)
 
 
@@ -32,23 +36,19 @@ class velo:
         l_x, l_y = particle.position(self.left_sensor_z)  # may be able to do this above
         r_x, r_y = particle.position(self.right_sensor_z)
         print(l_x)
-        fig, ax = plt.subplots(1)
-        plot_sensor(l_x, l_y, ax)
-        plot_sensor(r_x, r_y, ax)
-        plt.show() 
-
         for i in range(len(self.left_sensor_z)):
+           
+            l_hits = self.l_sensors[i].in_sensor(l_x, l_y)
+            print(f"left hits {l_hits}")
+            print(self.l_sensors[i].z_pos)
             
-            if (self.l_sensors[i].in_sensor(l_x, l_y) & self.r_sensors[i].in_sensor(r_x, r_y)) == 0:
-                print("error")
             
-            elif self.l_sensors[i].in_sensor(l_x, l_y) == 1:
-                hits += 1
+        for i in range(len(self.right_sensor_z)):
+            r_hits = self.r_sensors[i].in_sensor(r_x, r_y)
+            print(f"right hits {r_hits}")
 
-            elif self.r_sensors[i].in_sensor(r_x, r_y) == 1:
-                hits += 1
 
-        return hits
+        return l_hits, r_hits
 
 
 if __name__ == "__main__":
@@ -65,8 +65,8 @@ if __name__ == "__main__":
     # l_x, l_y = particle.position(self.left_sensor_z)  # may be able to do this above
     # r_x, r_y = particle.position(self.right_sensor_z)
     
-    # velo(z_left_sensors, z_right_sensors).hits(part)
-
+    hits = velo(z_left_sensors, z_right_sensors).hits(part)
+    print(hits)
     l_x, l_y = part.position(z_left_sensors)  # may be able to do this above
     r_x, r_y = part.position(z_right_sensors)
 
@@ -78,6 +78,7 @@ if __name__ == "__main__":
     positions_arr = []
     
     for i in z_right_sensors:
+        # print(f"right {i}")
         positions_arr.append((i, -5.1, -33.26))
         positions_arr.append((i, 5.1, -5.1))
 
@@ -89,9 +90,9 @@ if __name__ == "__main__":
     ones = np.ones(len(z_right_sensors))
     colors_arr = [("crimson")] * len(z_right_sensors) * 2
 
-    print(colors_arr)
-    print(sizes_arr)
-    print(positions_arr)
+    # print(colors_arr)
+    # print(sizes_arr)
+    # print(positions_arr)
 
     pc = plotCubeAt2(positions_arr, sizes_arr, colors=colors_arr, edgecolor="k")
     ax3d.add_collection3d(pc)    
@@ -103,7 +104,8 @@ if __name__ == "__main__":
     # colors = [("blue"), ("blue")]
 
     positions_arr = []
-    for i in z_right_sensors:
+    for i in z_left_sensors:
+        # print(f"left {i}")
         positions_arr.append((i, -33.06, -33.26))
         positions_arr.append((i, -37.41, 5.1))
 
@@ -114,16 +116,16 @@ if __name__ == "__main__":
     ones = np.ones(len(z_left_sensors))
     colors_arr = [("blue")] * len(z_right_sensors) * 2
     
-    print(len(positions_arr))
-    print(len(sizes_arr))    
-    print(len(colors_arr))
+    # print(len(positions_arr))
+    # print(len(sizes_arr))    
+    # print(len(colors_arr))
 
 
     pc = plotCubeAt2(positions_arr, sizes_arr, colors=colors_arr, edgecolor="k")
     ax3d.add_collection3d(pc)    
 
 
-    ax3d.plot(z_right_sensors, l_x,  r_y,  marker="o")
+    ax3d.plot(z_right_sensors, l_x,  r_y,  marker="o", color="green")
 
     # ax3d.scatter(0, -5.1, -5.1)
     ax3d.set_xlabel("z")
@@ -132,4 +134,12 @@ if __name__ == "__main__":
     ax3d.set_zlim(-50, 50)
     ax3d.set_ylim(-50,50)
     ax3d.set_xlim(-300, 800)
+
+    legend_elements = [Line2D([0], [0], color="green", lw=4, label="Particle Path"),
+                Patch(facecolor='crimson', edgecolor='black',
+                         label='Right Sensors'),
+                Patch(facecolor='blue', edgecolor='black',
+                         label='Left Sensors')]
+
+    ax3d.legend(handles = legend_elements)
     plt.show()

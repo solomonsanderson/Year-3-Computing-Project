@@ -13,14 +13,14 @@ class particle:
         start: tuple/list - the starting position of the particle that we measure (x, y, z))
         '''
 
-        print(momentum)
+        # print(momentum)
         self.p_arr = np.array(momentum)
         self.p_x, self.p_y, self.p_z = momentum
         self.x_0, self.y_0, self.z_0 = start
 
 
     def position(self, z):
-        print(z)
+        # print(z)
         nearest_z = z[(np.abs(z - self.z_0)).argmin()]
 
         z_diff = nearest_z - self.z_0  # distance between starting point and first sensor

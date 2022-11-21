@@ -29,6 +29,8 @@ def plotCubeAt2(positions,sizes=None,colors=None, **kwargs):
         g.append( cuboid_data2(p, size=s) )
     return Poly3DCollection(np.concatenate(g),  
                             facecolors=np.repeat(colors,6), **kwargs)
+
+                            
 if __name__ == "__main__":   
     positions = [(-3,5,-2),(1,7,1)]
     sizes = [(4,5,3), (3,3,7)] # x, y, z
