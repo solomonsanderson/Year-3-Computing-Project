@@ -1,5 +1,6 @@
 '''creating a class for the velo sensor'''
 
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -33,22 +34,36 @@ class velo:
         ''''''
         hits = 0
 
-        l_x, l_y = particle.position(self.left_sensor_z)  # may be able to do this above
-        r_x, r_y = particle.position(self.right_sensor_z)
-        print(l_x)
+        particle.calibrate(self.zs)
+
+        # particle.calibrate(self.left_sensor_z)  # may be able to do this above
+        # particle.calibrate(self.right_sensor_z)
+
+        hits = []
+
         for i in range(len(self.left_sensor_z)):
-           
+            l_x, l_y, l_z = particle.position(self.left_sensor_z[i])
             l_hits = self.l_sensors[i].in_sensor(l_x, l_y)
             print(f"left hits {l_hits}")
-            print(self.l_sensors[i].z_pos)
+            if (l_hits[0].size > 0 ) & (l_hits[1].size > 0):
+                hits.append((l_z, l_x, l_y))
             
-            
+
         for i in range(len(self.right_sensor_z)):
+            r_x, r_y, r_z = particle.position(self.right_sensor_z[i])
             r_hits = self.r_sensors[i].in_sensor(r_x, r_y)
-            print(f"right hits {r_hits}")
+
+            print(f"r hits {r_hits}")
+            # print(r_hits[0].size)
+            # print(r_hits[1].size)
+            # print(r_hits[0].size > 0)
+            if (r_hits[0].size > 0):
+                hits.append((r_z, r_x, r_y))
+
+            # print(f"right hits {r_hits}")
 
 
-        return l_hits, r_hits
+        return hits
 
 
 if __name__ == "__main__":
@@ -67,9 +82,12 @@ if __name__ == "__main__":
     
     hits = velo(z_left_sensors, z_right_sensors).hits(part)
     print(hits)
-    l_x, l_y = part.position(z_left_sensors)  # may be able to do this above
-    r_x, r_y = part.position(z_right_sensors)
 
+    z_all = np.concatenate([z_left_sensors, z_right_sensors])
+    # l_x, l_y, l_z = part.position(z_left_sensors)  # may be able to do this above
+    # r_x, r_y, r_z = part.position(z_right_sensors)
+    x, y, z = part.position(z_all)
+    
     ax3d = plt.figure().add_subplot(projection="3d")
 
     # Right Sensors
@@ -124,8 +142,14 @@ if __name__ == "__main__":
     pc = plotCubeAt2(positions_arr, sizes_arr, colors=colors_arr, edgecolor="k")
     ax3d.add_collection3d(pc)    
 
-
-    ax3d.plot(z_right_sensors, l_x,  r_y,  marker="o", color="green")
+    # print(z_right_sensors)
+    # print(part.z_arr)
+    ax3d.plot(part.z_arr, part.x_arr,  part.y_arr,  marker="o", color="green")
+    ax3d.scatter(0,0,0, color="y", s=15)
+    # print(hits)
+    for hit in hits:
+        # print(hit)
+        ax3d.scatter(hit[0], hit[1], hit[2], color="hotpink")
 
     # ax3d.scatter(0, -5.1, -5.1)
     ax3d.set_xlabel("z")
