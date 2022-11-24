@@ -10,7 +10,51 @@ from particle import particle
 from sensor import plot_sensor
 from itertools import product, combinations
 from cube_plot import plotCubeAt2
+import random
 
+
+def pr_theta(pseudo_rapidity):
+    ''''''
+    theta = 2 * np.arctan(np.exp(-pseudo_rapidity))
+    return theta
+
+
+def particle_generate(number, pseudo_rapidity, z):
+    theta = pr_theta(pseudo_rapidity)
+    ys = z * np.tan(theta)
+
+    
+    particles = []
+
+    # xys = list(zip(x,y))
+    for count, y in enumerate(ys):
+        phi = np.random.uniform(0, 2 * np.pi)
+        xs = z * ((np.tan(theta))/(np.tan(phi)))
+        # print(xy, z)
+        # print(*xy, z[count])
+        part_obj = particle((xs[count] ,y, z[count]), (0,0,0))
+        part_obj.calibrate(z)
+        particles.append(part_obj)
+    
+    
+    return particles
+
+
+def recon_eff(particles):
+    reconned = 0
+    for par in particles:
+        # print(par)
+        hits, number = velo_detect.hits(par)
+        if number >= 3:
+            reconned += 1
+
+        # print(par.z_ar/r, par.x_arr,  par.y_arr)
+        ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None)
+
+    print(reconned)
+    print(len(particles))
+    efficiency = reconned / len(particles)
+    return efficiency
 
 class velo:
     def __init__(self, left_sensor_z, right_sensor_z):
@@ -44,8 +88,8 @@ class velo:
         for i in range(len(self.left_sensor_z)):
             l_x, l_y, l_z = particle.position(self.left_sensor_z[i])
             l_hits = self.l_sensors[i].in_sensor(l_x, l_y)
-            print(f"left hits {l_hits}")
-            if (l_hits[0].size > 0 ) & (l_hits[1].size > 0):
+            # print(f"left hits {l_hits}")
+            if (l_hits[0].size > 0 ) & (l_hits[1].size > 0) & (random.choices([True, False], weights = (98, 2))[0]):
                 hits.append((l_z, l_x, l_y))
             
 
@@ -53,17 +97,18 @@ class velo:
             r_x, r_y, r_z = particle.position(self.right_sensor_z[i])
             r_hits = self.r_sensors[i].in_sensor(r_x, r_y)
 
-            print(f"r hits {r_hits}")
+            # print(f"r hits {r_hits}")
             # print(r_hits[0].size)
             # print(r_hits[1].size)
             # print(r_hits[0].size > 0)
-            if (r_hits[0].size > 0):
+            if (r_hits[0].size > 0) & (random.choices([True, False], weights = (98, 2))[0]):
                 hits.append((r_z, r_x, r_y))
 
             # print(f"right hits {r_hits}")
 
+        number = len(hits)
 
-        return hits
+        return hits, number
 
 
 if __name__ == "__main__":
@@ -73,15 +118,19 @@ if __name__ == "__main__":
     z_left_sensors = np.array([-277, -252, -227, -202, -132, -62, -37, -12, 13, 38, 63, 88, 
     113, 138, 163, 188, 213, 238, 263, 325, 402, 497, 616, 661, 706, 751])
 
+    # generating a random phi value:
+    phi = np.random.uniform(0, 2 * np.pi)
+    # print(phi)
     part = particle((np.random.uniform(-1,1), np.random.uniform(-1, 1), np.random.uniform(-1, 1)), (0, 0, 0))
-    # part = particle((1,2,3),(0,0,0))
-
+    # part = particle((1,2,3),(0,0,0)   )
     
     # l_x, l_y = particle.position(self.left_sensor_z)  # may be able to do this above
     # r_x, r_y = particle.position(self.right_sensor_z)
     
-    hits = velo(z_left_sensors, z_right_sensors).hits(part)
-    print(hits)
+    
+    velo_detect = velo(z_left_sensors, z_right_sensors)
+    hits, number = velo_detect.hits(part)
+    # print(hits)
 
     z_all = np.concatenate([z_left_sensors, z_right_sensors])
     # l_x, l_y, l_z = part.position(z_left_sensors)  # may be able to do this above
@@ -144,7 +193,7 @@ if __name__ == "__main__":
 
     # print(z_right_sensors)
     # print(part.z_arr)
-    ax3d.plot(part.z_arr, part.x_arr,  part.y_arr,  marker="o", color="green")
+    # ax3d.plot(part.z_arr, part.x_arr,  part.y_arr,  marker="o", color="green")
     ax3d.scatter(0,0,0, color="y", s=15)
     # print(hits)
     for hit in hits:
@@ -166,4 +215,13 @@ if __name__ == "__main__":
                          label='Left Sensors')]
 
     ax3d.legend(handles = legend_elements)
+
+    particles = particle_generate(1000, 4, z_all)
+    print(f" reconstruction efficiency {recon_eff(particles)}")
+
+    for par in particles:
+        hits, number = velo_detect.hits(par)
+        ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
+
+
     plt.show()
