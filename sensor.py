@@ -4,6 +4,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from itertools import product, combinations
+from cube_plot import plotCubeAt2
 
 
 
@@ -42,7 +43,77 @@ def plot_sensor(x, y, axis):
     axis.set_xlabel("x position (mm)")
     axis.set_ylabel("y postion (mm)")
     axis.set_title("Plot of particle incidence on sensor.")
+
+
+def plot_sensor_3d(axis):
+        # Right Sensors
+    positions = [(0, -5.1, -33.26), (0, 5.1, -5.1)]
+    positions_arr = []
     
+    for i in z_right_sensors:
+        # print(f"right {i}")
+        positions_arr.append((i, -5.1, -33.26))
+        positions_arr.append((i, 5.1, -5.1))
+
+        
+    
+    sizes = [(0.2, 42.51, 28.41), (0.2, 28.16, 38.61)]
+    sizes_arr = sizes * len(z_right_sensors)
+
+    ones = np.ones(len(z_right_sensors))
+    colors_arr = [("crimson")] * len(z_right_sensors) * 2
+
+    # print(colors_arr)
+    # print(sizes_arr)
+    # print(positions_arr)
+
+    pc = plotCubeAt2(positions_arr, sizes_arr, colors=colors_arr, edgecolor="k")
+    axis.add_collection3d(pc)    
+
+
+    # Left Sensors
+    positions = [(0, -33.06, -33.26),(0, -37.41, 5.1)]  # z, x, y
+    # sizes = [(0.2, 28.16, 38.61), (0.2, 42.51, 28.41)]  # z, x, y
+    # colors = [("blue"), ("blue")]
+
+    positions_arr = []
+    for i in z_left_sensors:
+        # print(f"left {i}")
+        positions_arr.append((i, -33.06, -33.26))
+        positions_arr.append((i, -37.41, 5.1))
+
+    
+    sizes = [(0.2, 28.16, 38.61), (0.2, 42.51, 28.41)]
+    sizes_arr = sizes * len(z_left_sensors)
+
+    ones = np.ones(len(z_left_sensors))
+    colors_arr = [("blue")] * len(z_right_sensors) * 2
+    
+    # print(len(positions_arr))
+    # print(len(sizes_arr))    
+    # print(len(colors_arr))
+
+
+    pc = plotCubeAt2(positions_arr, sizes_arr, colors=colors_arr, edgecolor="k")
+    axis.add_collection3d(pc)    
+
+    # print(z_right_sensors)
+    # print(part.z_arr)
+    # ax3d.plot(part.z_arr, part.x_arr,  part.y_arr,  marker="o", color="green")
+    axis.scatter(0,0,0, color="y", s=15)
+    # print(hits)
+    # for hit in hits:
+    #     # print(hit)
+    #     ax3d.scatter(hit[0], hit[1], hit[2], color="hotpink")
+
+    # ax3d.scatter(0, -5.1, -5.1)
+    axis.set_xlabel("z")
+    axis.set_ylabel("x")
+    axis.set_zlabel("y")
+    axis.set_zlim(-50, 50)
+    axis.set_ylim(-50,50)
+    axis.set_xlim(-300, 800)
+
 
 class right_sensor():
     def __init__(self, z_pos):
