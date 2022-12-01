@@ -11,31 +11,48 @@ from sensor import plot_sensor, plot_sensor_3d
 from itertools import product, combinations
 import random
 from scipy.optimize import curve_fit
-# from skspatial.objects import Line, Points
-# from skspatial.plotting import plot_3d
 
 
 
 def pr_theta(pseudo_rapidity):
-    ''''''
+    '''Calculates theta given a pseudo rapidity value
+    
+    Args:
+        pseudo_rapidity - float/ array of psuedo rapidity value(s) to be
+        converted.
+    
+    Returns:
+        theta - float/ array of theta values.'''
+
+
     theta = 2 * np.arctan(np.exp(-pseudo_rapidity))
     return theta
 
 
 def particle_generate(number, pseudo_rapidity, z):
+    '''Generates a given number of particle objects with pseudo rapidity at 
+    given z values.
+    
+    Args:
+        number - int, the number of particle objects to be created.
+        pseudo_rapidity - int/ float, the pseudo rapidity of the desired particles.
+        z - array/ int, the z positions of the sensors.
+    
+    Returns:
+        particles - list, A list of particle objects, created using the 
+        particle class.
+    '''
+
+
     theta = pr_theta(pseudo_rapidity)
     ys = z * np.tan(theta)
 
-    
     particles = []
 
-
-    # xys = list(zip(x,y))
+    
     while len(particles) < number:
         phi = np.random.uniform(0, 2 * np.pi)
         xs = z * ((np.tan(theta))/(np.tan(phi)))
-        # print(xy, z)
-        # print(*xy, z[count])
         part_obj = particle((xs[0] ,ys[0], z[0]), (0,0,0))
         part_obj.calibrate(z)
         particles.append(part_obj)
@@ -44,23 +61,44 @@ def particle_generate(number, pseudo_rapidity, z):
 
 
 def recon_eff(particles):
+    ''' Calculates the reconstruction efficiency for a given set of particles.
+    
+    Args:
+        particles - list, A list of particle objects.
+
+    Returns:
+        efficiency - float, the reconstruction efficency of the given set 
+        of particles.
+    '''
+
+
     reconned = 0
     for par in particles:
-        # print(par)
         hits, number = velo_detect.hits(par)
         if number >= 3:
             reconned += 1
 
-        # print(par.z_ar/r, par.x_arr,  par.y_arr)
         ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None)
 
-    print(reconned)
-    print(len(particles))
     efficiency = reconned / len(particles)
     return efficiency
 
 
 def fit_3d(x, y, z):
+    ''' Fits a straight line to a set of points in 3d space using the First 
+    principle component.
+
+    Args:
+        x - list/ array, a list or array of x values to be fitted.
+        y - list/array, a list or array of y values to be fitted.
+        z - list/array, a list or array of z values to be fitted
+    
+    returns: 
+        linepts - numpy array, an array of points for a straight line
+        which has been fit to the data.
+    '''
+
+
     data = np.array(list(zip(x,y,z)))
     mean = data.mean(axis=0)
     # print(mean)
@@ -74,7 +112,35 @@ def fit_3d(x, y, z):
 
 
 class velo:
+    ''' A class representing the VELO detector at LHCb.
+
+    Attributes:
+        l_sensors - list, a list of left sensor objects, created using the
+        left_sensor class
+        r_sensors - list, a list of right sensor objects, created using the
+        right_sensor class.
+        left_sensor_z - list/array, a list or array of z locations of the left
+        sensors of the detector.
+        right_sensor_z - list/array, a list or array of z locations of the right
+        sensors of the detector.
+        zs - numpy array, a numpy array containing the z values of both the left 
+        and right sensors.
+    '''
+
+
     def __init__(self, left_sensor_z, right_sensor_z):
+        '''Constructor for the velo class.
+        
+        Args: 
+            left_sensor_z - list/array, a list or array of z locations of the left
+            sensors of the detector.
+            right_sensor_z - list/array, a list or array of z locations of the right
+            sensors of the detector.
+        
+        Returns:
+            None'''
+
+
         self.l_sensors = []
         self.r_sensors = []
         self.left_sensor_z = left_sensor_z
@@ -92,7 +158,14 @@ class velo:
 
 
     def hits(self, particle, hit_efficiency = 98, hit_resolution = 0.012):
-        ''''''
+        ''' Method for determining the location of sensor hits and the number
+        of them. Randomly smears particle position with Gaussian distribution 
+        to simulate resolution of detector. 
+        
+        Args: particle particle object to be checked for a sensor hit.
+            hit_efficiency - float, the percentage chance that the particle is
+            detected by the sensor. default: 98.
+            hit_resolution - float, the resolution of the sensors. '''
         hits = 0
 
         particle.calibrate(self.zs)
@@ -183,8 +256,9 @@ if __name__ == "__main__":
 
     ax3d.legend(handles = legend_elements)
 
-    particles = particle_generate(1, 4, z_all)
-    print(f" reconstruction efficiency {recon_eff(particles)}")
+    particles = particle_generate(1000, 4, z_all)
+    reconstruction_eff = recon_eff(particles)
+    print(f" reconstruction efficiency {reconstruction_eff}")
     par = particles[0]
 
     # for par in particles:
@@ -195,5 +269,9 @@ if __name__ == "__main__":
     ax3d.plot(*linepts.T, color="orange")
     # points = list(zip(par.z_arr, par.x_arr, par.y_arr))
     # line_fit = Line.best_fit(points)
+
+    
+    rand_rapidity = np.random.uniform(low=0.1, high=7.04, size = 1000 )
+    particle_generate(1000, rand_rapidity)
 
     plt.show()
