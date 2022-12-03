@@ -17,7 +17,22 @@ z_left_sensors_bounds = np.array(list(zip(z_left_sensors, z_left_sensors + 0.2))
 z_right_sensors = np.array([-289, -264, -239, -214, -144, -74, -49, -24, 1, 26, 51, 76, 
 101, 126, 151, 176, 201, 226, 251, 313, 390, 485, 604, 649, 694, 739])
 
+
 def plot_sensor(x, y, axis):
+    '''Function for making a 2 dimensional plot of the sensors and any hits on
+    them.
+    
+    Args:
+        x - float/int, position of particle hits to be plotted on the sensor.
+        y - float/int, position of particle hots to be plotted on the sensor.
+        axis - matplotlib ax object, the axis for the sensor and the particle
+        hit to be plotted on.
+    
+    Returns:
+        None.
+    '''
+
+    
     # Right Detector
     axis.plot([5.1, 33.26], [-5.1, -5.1], color="red")
     axis.plot([5.1, 33.26], [33.51, 33.51], color="red")
@@ -46,7 +61,19 @@ def plot_sensor(x, y, axis):
 
 
 def plot_sensor_3d(axis):
-        # Right Sensors
+    '''Function for plotting the sensors in 3 dimensions. Plots both the left
+    and right sensors.
+    
+    Args:
+        axis - matplotlib axis object with 3d projection, the axis for the
+        sensor and particle track to be plotted on.
+
+    Returns: 
+        None.
+    '''
+
+
+    # Right Sensors
     positions = [(0, -5.1, -33.26), (0, 5.1, -5.1)]
     positions_arr = []
     
@@ -116,7 +143,19 @@ def plot_sensor_3d(axis):
 
 
 class right_sensor():
+    ''' A class defining a right hand sensor in the vertex locator at LHCb.
+    
+    Attributes:
+        z_pos - array/list, the z posions of the right sensors.'''
+
+ 
     def __init__(self, z_pos):
+        '''Constructor for right_sensor.
+        Args:
+            z_pos - array/list, the z posions of the right sensors.
+        Returns:
+            None.
+         '''
         self.z_pos = z_pos
 
 
@@ -124,11 +163,14 @@ class right_sensor():
         '''Calculating if the particle lies within the right hand sensor.
         
         Args: 
-        x: float - x position of particle.
-        y: float - y position of particle.
+            x: float - x position of particle.
+            y: float - y position of particle.
         
         Returns: 
-        1 or 0: returns 1 if inside the sensor, or 0 if outside.'''
+            (hits_y, hits_x) - tuple, a tuple of arrays
+            of the y and x positions of particle hits.
+            '''
+
 
         index = np.where((((5.1 < x) & (x < 33.26)) & ((-5.1 < y) & (y < 33.51))) | (((-5.1 < x) & (x < 37.41)) & ((-33.51 < y) & (y < -5.1))))
         hits_y, hits_x = y[index], x[index]
@@ -137,7 +179,22 @@ class right_sensor():
 
 
 class left_sensor():
+    ''' A class defining a left hand sensor in the vertex locator at LHCb.
+    
+    Attributes:
+        z_pos - array/list, the z posions of the left sensors.'''
+        
+
+
     def __init__(self, z_pos):
+        '''Constructor for right_sensor.
+        Args:
+            z_pos - array/list, the z posions of the right sensors.
+        Returns:
+            None.
+         '''
+
+        
         self.z_pos = z_pos
 
 
@@ -145,12 +202,15 @@ class left_sensor():
         '''Calculating if the particle lies within the left hand sensor.
         
         Args: 
-        x: float - x position of particle.
-        y: float - y position of particle.
+            x: float - x position of particle.
+            y: float - y position of particle.
         
         Returns: 
-        1 or 0: returns 1 if inside the sensor, or 0 if outside.'''
-        # print(x)
+            (hits_y, hits_x) - tuple, a tuple of arrays
+            of the y and x positions of particle hits.
+            '''
+        
+
         index = np.where((((-33.26 < x) & (x < -5.1)) & ((-33.51 < y) & (y < 5.1))) | (((-37.41 < x) & (x < 5.1)) & ((5.1 < y) & (y < 33.51))))
         hits_y, hits_x = y[index], x[index]
         

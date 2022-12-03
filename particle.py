@@ -5,7 +5,19 @@ import numpy as np
 
 
 class particle:
-    '''DOC'''
+    '''A class for a particle to be detected by the sensors
+    
+    Attributes:
+        p_arr - array, an array of the particles initial momentum values.
+        p_x - float, the initial momentum in the x direction.
+        p_y - float, the initial momentum in the y direction.
+        p_z - float, the initial momentum in the z direction.
+        x_0 - float, the initial position in the x direction.
+        y_0 - float, the initial position in the y direction.
+        z_0 - float, the initial position in the z direction.
+        '''
+
+
     def __init__(self, momentum, start):
         '''Constructor for particle class
         
