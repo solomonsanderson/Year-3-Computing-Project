@@ -65,39 +65,49 @@ if __name__ == "__main__":
 
     ax3d.legend(handles = legend_elements)
 
-    particles = particle_generate(50, 4, z_all)
+    particles = particle_generate(50, 4, z_all)  # Generatess 50 particles with a pseudo rapidity of 4
     reconstruction_eff, reconstruction_hits = recon_eff(particles, velo_detect)
     len(reconstruction_hits)
     print(f"reconstruction efficiency {reconstruction_eff}")
     # print(len(reconstruction_eff))
     par = particles[0]
 
+    recon_hits = []
     for par in particles:
         hits, number = velo_detect.hits(par)
         ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
+        if len(hits) >=3:
+            recon_hits.append(hits)
+    
+    # print(np.array(recon_hits[0])[])
+    z, x, y = np.array(recon_hits[0])[:,0].flatten(), np.array(recon_hits[0])[:,1].flatten(), np.array(recon_hits[0])[:,2].flatten()
+    print(z, x, y)
+    fit_3d(z, x, y)
+
     # ax3d.scatter(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
-    linepts = fit_3d(particles[0].z_arr, particles[0].x_arr, particles[0].y_arr)
+    # linepts = fit_3d(particles[0].z_arr, particles[0].x_arr, particles[0].y_arr)
     # ax3d.plot(*linepts.T, color="orange")
     # points = list(zip(par.z_arr, par.x_arr, par.y_arr))
-    # line_fit = Line.best_fit(points)
+    # line_fit = Line.  (points)
 
     
     rand_rapidity = np.random.uniform(low=0.1, high=7.04, size = 100 )
-    rapid_fig, rapid_ax = plt.subplots()
+    # rapid_fig, rapid_ax = plt.subplots()
     unif_rapidity = np.linspace(0, 10, 100)
     effs = []
     count = 0
-    for num in unif_rapidity:
-        count +=1
-        print(count)
-        particles = particle_generate(10, num, z_all)
-        recon_efficiency = recon_eff(particles, velo_detect)[0]
-        effs.append(recon_efficiency)
+    # for num in unif_rapidity:
+    #     count +=1
+    #     # print(count)
+    #     particles = particle_generate(10, num, z_all)
+    #     recon_efficiency = recon_eff(particles, velo_detect)[0]
+    #     effs.append(recon_efficiency)
     
-    fig, ax = plt.subplots(1)
-    ax.plot(unif_rapidity, effs)
-    ax.set_xlabel("Rapidity $\eta$")
-    ax.set_ylabel("Reconstruction efficiency")
+
+    # fig, ax = plt.subplots(1)
+    # ax.plot(unif_rapidity, effs)
+    # ax.set_xlabel("Rapidity $\eta$")
+    # ax.set_ylabel("Reconstruction efficiency")
 
 
     # print(linepts[0])
@@ -108,8 +118,11 @@ if __name__ == "__main__":
     
 
     # uniform sampling
-    uniform_particles = uniform_particle_generate((0, 2 * np.pi), (3.5, 4.5), 10, z_all)
-    square = uniform_particles[0].x_arr**2 + uniform_particles[0].y_arr**2 + uniform_particles[0].z_arr**2
-    root = square ** 0.5
-    print(root)
+    uniform_particles = uniform_particle_generate((0.0001, 2 * np.pi), (3.5, 4.5), 10, z_all)
+    for particle_ in uniform_particles:
+        particle_.set_pmag(10)
+        # particle_.transverse_momentum()
+    # square = uniform_particles[1].x_arr**2 + uniform_particles[1].y_arr**2 + uniform_particles[1].z_arr**2
+    # root = squ    are ** 0.5
+    # print(root)
     plt.show()

@@ -113,7 +113,7 @@ def line(x, m, c):
     y = m * x + c
     return y
     
-def fit_3d(x, y, z):
+def fit_3d(z, x, y):
     ''' Fits a straight line to a set of points in 3d space using the First 
     principle component.
 
@@ -127,11 +127,28 @@ def fit_3d(x, y, z):
         which has been fit to the data.
     '''
 
-    popt_xz, pcov_xz = curve_fit(line, x, z)
-    popt_yz, pcov_yz = curve_fit(line, y, z)
+    print(z,x)
+    fig, axs = plt.subplots(2)
+    popt_xz, pcov_xz = curve_fit(line, np.array(z), np.array(x))
+    xz_errors = np.diag(pcov_xz)
+    axs[0].plot(z, line(z, *popt_xz), "r--", alpha=0.5, label = f"straight line fit \nm = {popt_xz[0]:.2} $\pm$ {xz_errors[0]:.2}\nc = {popt_xz[1]:.2} $\pm$ {xz_errors[1]:.2}")
+    axs[0].scatter(z, x)
+    axs[0].set_title("Straight Line Fit")
+    axs[0].set_xlabel("z"), axs[0].set_ylabel("x")
+    zx_angle = np.arctan(popt_xz[1])
 
+    popt_yz, pcov_yz = curve_fit(line, z, y)
+    yz_errors = np.diag(pcov_yz)
+    axs[1].plot(z, line(z, *popt_yz), "r--", alpha=0.5, label=f"straight line fit \nm = {popt_yz[0]:.2} $\pm$ {yz_errors[0]:.2} \nc = {popt_yz[1]:.2} $\pm$ {yz_errors[1]:.2}")
+    axs[1].scatter(z, y)
+    axs[1].set_title("Straight Line Fit")
+    axs[1].set_xlabel("z"), axs[1].set_ylabel("y")
+    zy_angle = np.arctan(popt_yz[1])
+    print(np.degrees(zx_angle), np.degrees(zy_angle))
+    axs[0].legend()
+    axs[1].legend()
+    fig.tight_layout()
     
-
 
 
 class velo:
@@ -228,6 +245,7 @@ class velo:
         number = len(hits)
 
         return hits, number
+
 
 
 if __name__ == "__main__":

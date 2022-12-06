@@ -82,6 +82,39 @@ class particle:
         return self.x_arr[index], self.y_arr[index], self.z_arr[index] 
 
         
+    def set_pmag(self, momentum_magnitude):
+        '''
+        
+        '''
+
+
+        current_pmag = np.linalg.norm(self.p_arr)
+        unit_vector = (1 / current_pmag) * self.p_arr
+        new_p = unit_vector * momentum_magnitude
+        print(new_p)
+        print(np.linalg.norm(new_p))
+        self.p_arr = np.array(new_p)  # consider removing the individual pxpypz part 
+    
+
+    def transverse_momentum(self):
+        '''
+        
+        '''
+
+        #  TODO: fix this so that it uses smeared momentum values
+        p_t = np.linalg.norm(np.array([self.p_arr[0], self.p_arr[1]]))  # Cannot do this as it does not take the error that we introduce through the fit into account 
+        
+        self.p_t = p_t
+
+
+
+    def p_resolution(self, m_x, sigma_mx, m_y, sigma_my):
+        theta_x, theta_y = np.arctan(m_x), np.arctan(m_y)
+        p_x = p_xz * np.sin(theta_x)
+        p_y = p_yz * np.sin(theta_y)
+        p_t = np.linalg(np.array([p_x, p_y]))
+        sigma_pt = (p_x *  sigma_mx *(np.cos(theta_x)) ** 3) + (p_y * sigma_my * (np.cos(theta_y)) ** 3)
+
 
 
 if __name__ == "__main__":
