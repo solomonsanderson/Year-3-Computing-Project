@@ -66,8 +66,8 @@ def uniform_particle_generate(phi_range, eta_range, number, z):
     '''
 
 
-    phi_values = np.linspace(phi_range[0], phi_range[1], number)
-    eta_values = np.linspace(eta_range[0], eta_range[1], number)
+    phi_values = np.random.uniform(*phi_range, size=number)
+    eta_values = np.random.uniform(*eta_range, size=number)
     print(f"phis = {phi_values}")
     print(f"etas = {eta_values}")
     particles = []
@@ -111,6 +111,21 @@ def recon_eff(particles, velo_obj):
     efficiency = reconned / len(particles)
     return efficiency, reconstructed_hits
 
+
+def recon_eta(pr_range, z, velo):
+    ''''''
+    etas = np.linspace(*pr_range, 100)
+    effs = []
+    for eta in etas:
+        particles = particle_generate(10, eta, z)
+        eff, recon_hits = recon_eff(particles, velo)
+        effs.append(eff)
+        # print(eff)
+    
+    return etas, effs
+    
+
+
 def line(x, m, c):
     y = m * x + c
     return y
@@ -129,6 +144,8 @@ def fit_3d(z, x, y, plot = False):
         linepts - numpy array, an array of points for a straight line
         which has been fit to the data.
     '''
+
+
     popt_xz, pcov_xz = curve_fit(line, np.array(z), np.array(x))
     m_x = popt_xz[0]
     xz_errors = np.diag(pcov_xz)

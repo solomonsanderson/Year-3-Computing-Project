@@ -9,7 +9,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
 from particle import particle
-from velo import velo, fit_3d, particle_generate, uniform_particle_generate, recon_eff
+from velo import velo, fit_3d, particle_generate, uniform_particle_generate, recon_eff, recon_eta
 from sensor import plot_sensor_3d
 
 
@@ -96,27 +96,29 @@ if __name__ == "__main__":
     effs = []
     count = 0
 
-    
-    # uniform sampling
-    # ax3d1 = plt.figure().add_subplot(projection="3d")
-    # plot_sensor_3d(axis=ax3d1)
+    etas, effs = recon_eta([0, 10], z_all, velo_detect)    
+    fig_eff, ax_eff = plt.subplots()
+    ax_eff.plot(etas, effs)
+
+
     p_ts = []
     sigmas = []
     etas = []
     phis = []
-    uniform_particles, phi_values, eta_values = uniform_particle_generate((0, 2 * np.pi), (1.0, 2), 20, z_all)
+    uniform_particles, phi_values, eta_values = uniform_particle_generate((0, 2 * np.pi), (5, 6), 1000, z_all)
     for count, particle_ in enumerate(uniform_particles):
         particle_.set_pmag(10)  # setting the particles total momentum in GeV
         hits = velo_detect.hits(particle_)
         if len(hits) >= 3:
-            ax3d.plot(particle_.z_arr, particle_.x_arr,  particle_.y_arr,  marker=None, alpha=0.5, color="green")
-            z, x, y = np.array(hits).flatten(), np.array(hits).flatten(), np.array(hits).flatten()
+            # ax3d.plot(particle_.z_arr, particle_.x_arr,  particle_.y_arr,  marker=None, alpha=0.5, color="green")
+            # print(np.array(hits)[:,0])
+            z, x, y = np.array(hits)[:,0].flatten(), np.array(hits)[:,1].flatten(), np.array(hits)[:,2].flatten()
             fit_result  = fit_3d(z, x, y, plot=False)
-            print(f"fit: {fit_result}")
+            # print(f"fit: {fit_result}")
             p_t = particle_.transverse_momentum(*fit_result[0:2], 10)
             sigma_p_t = particle_.p_resolution(*fit_result)
             
-            print(f"p_t = {p_t}, sigma_p_t = {sigma_p_t}")
+            # print(f"p_t = {p_t}, sigma_p_t = {sigma_p_t}")
             p_ts.append(p_t)
             etas.append(eta_values[count])
             phis.append(phi_values[count])
@@ -129,8 +131,30 @@ if __name__ == "__main__":
     # pt_ax[0].errorbar(phis, sigma_p_t)
     # pt_ax[1].errorbar(etas, sigma_p_t)
 
-    pt_ax[0].plot(phis, p_ts)
-    pt_ax[0].set_xlabel("$\phi$")
+    n_bins = 24
+    width = (np.max(etas) - np.min(etas))/n_bins
+    bins=[ np.min(etas) + i*width for i in range(n_bins+1) ]
+    bin_centres = [ (bins[i] + bins[i+1])/2 for i in range(len(bins)-1)]
+    print(f"bin pos{bin_centres}")
+
+    indices  = np.digitize(etas, bins) #< 100 indices 1
+    print(indices)
+
+    pt_plot = [ 0 for i in range(n_bins)]
+    print(pt_plot)
+    events_per_bin = [ 0 for i in range(len(bins) -1 )]
+    for i, index in enumerate(indices):
+        # print(i, index)
+        pt_plot[index - 2] += p_ts[i]
+        events_per_bin[index - 2] += 1
+
+    pt_ax[0].bar(bin_centres, [pt/n if n > 0 else 0 for pt, n in zip(pt_plot,events_per_bin)], width=width, align="center")
+
+
+    print(sorted(p_ts))
+    # pt_ax[0].plot(phis, p_ts)
+    # pt_ax[0].hist(p_ts)
+    pt_ax[0].set_xlabel("$\eta$")
     pt_ax[0].set_ylabel("$P_T$")
     pt_ax[1].plot(etas, p_ts)
     pt_ax[1].set_xlabel("$\eta$")
