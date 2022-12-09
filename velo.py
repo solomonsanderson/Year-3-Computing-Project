@@ -68,6 +68,8 @@ def uniform_particle_generate(phi_range, eta_range, number, z):
 
     phi_values = np.linspace(phi_range[0], phi_range[1], number)
     eta_values = np.linspace(eta_range[0], eta_range[1], number)
+    print(f"phis = {phi_values}")
+    print(f"etas = {eta_values}")
     particles = []
 
 
@@ -81,7 +83,7 @@ def uniform_particle_generate(phi_range, eta_range, number, z):
 
     
     # print(particles)
-    return particles
+    return particles, phi_values, eta_values
 
 
 def recon_eff(particles, velo_obj):
@@ -99,8 +101,8 @@ def recon_eff(particles, velo_obj):
     reconned = 0
     reconstructed_hits = []
     for par in particles:
-        hits, number = velo_obj.hits(par)
-        if number >= 3:
+        hits = velo_obj.hits(par)
+        if len(hits) >= 3:
             reconned += 1
             reconstructed_hits.append(hits)
 
@@ -113,7 +115,8 @@ def line(x, m, c):
     y = m * x + c
     return y
     
-def fit_3d(z, x, y):
+
+def fit_3d(z, x, y, plot = False):
     ''' Fits a straight line to a set of points in 3d space using the First 
     principle component.
 
@@ -126,28 +129,42 @@ def fit_3d(z, x, y):
         linepts - numpy array, an array of points for a straight line
         which has been fit to the data.
     '''
-
-    print(z,x)
-    fig, axs = plt.subplots(2)
     popt_xz, pcov_xz = curve_fit(line, np.array(z), np.array(x))
+    m_x = popt_xz[0]
     xz_errors = np.diag(pcov_xz)
-    axs[0].plot(z, line(z, *popt_xz), "r--", alpha=0.5, label = f"straight line fit \nm = {popt_xz[0]:.2} $\pm$ {xz_errors[0]:.2}\nc = {popt_xz[1]:.2} $\pm$ {xz_errors[1]:.2}")
-    axs[0].scatter(z, x)
-    axs[0].set_title("Straight Line Fit")
-    axs[0].set_xlabel("z"), axs[0].set_ylabel("x")
-    zx_angle = np.arctan(popt_xz[1])
+    m_x_sigma = xz_errors[0]
+    theta_x = np.arctan(popt_xz[0])
 
     popt_yz, pcov_yz = curve_fit(line, z, y)
+    m_y = popt_yz[0]
+    m_y_sigma = xz_errors
+    theta_y = np.arctan(popt_yz[0])
     yz_errors = np.diag(pcov_yz)
-    axs[1].plot(z, line(z, *popt_yz), "r--", alpha=0.5, label=f"straight line fit \nm = {popt_yz[0]:.2} $\pm$ {yz_errors[0]:.2} \nc = {popt_yz[1]:.2} $\pm$ {yz_errors[1]:.2}")
-    axs[1].scatter(z, y)
-    axs[1].set_title("Straight Line Fit")
-    axs[1].set_xlabel("z"), axs[1].set_ylabel("y")
-    zy_angle = np.arctan(popt_yz[1])
-    print(np.degrees(zx_angle), np.degrees(zy_angle))
-    axs[0].legend()
-    axs[1].legend()
-    fig.tight_layout()
+
+    # print(z,x)
+    if plot:
+        fig, axs = plt.subplots(2)
+
+        axs[0].plot(z, line(z, *popt_xz), "r--", alpha=0.5, label = f"straight line fit \nm = {popt_xz[0]:.2} $\pm$ {xz_errors[0]:.2}\nc = {popt_xz[1]:.2} $\pm$ {xz_errors[1]:.2}")
+        axs[0].scatter(z, x)
+        axs[0].set_title("Straight Line Fit")
+        axs[0].set_xlabel("z"), axs[0].set_ylabel("x")
+
+        axs[1].plot(z, line(z, *popt_yz), "r--", alpha=0.5, label=f"straight line fit \nm = {popt_yz[0]:.2} $\pm$ {yz_errors[0]:.2} \nc = {popt_yz[1]:.2} $\pm$ {yz_errors[1]:.2}")
+        axs[1].scatter(z, y)
+        axs[1].set_title("Straight Line Fit")
+        axs[1].set_xlabel("z"), axs[1].set_ylabel("y")
+        
+        axs[0].legend()
+        axs[1].legend()
+
+        fig.tight_layout()
+
+    
+    
+    # print(np.degrees(zx_angle), np.degrees(zy_angle))
+    
+    return m_x, m_y, m_x_sigma, m_y_sigma
     
 
 
@@ -242,9 +259,7 @@ class velo:
                 hits.append((r_z, r_x_smear, r_y_smear))
 
 
-        number = len(hits)
-
-        return hits, number
+        return hits
 
 
 

@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     
     velo_detect = velo(z_left_sensors, z_right_sensors)
-    hits, number = velo_detect.hits(part)
+    hits = velo_detect.hits(part)
     # print(hits)
 
     z_all = np.concatenate([z_left_sensors, z_right_sensors])
@@ -72,17 +72,16 @@ if __name__ == "__main__":
     # print(len(reconstruction_eff))
     par = particles[0]
 
-    recon_hits = []
-    for par in particles:
-        hits, number = velo_detect.hits(par)
-        ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
-        if len(hits) >=3:
-            recon_hits.append(hits)
+    # recon_hits = []
+    # for par in particles:
+    #     hits = velo_detect.hits(par)
+    #     ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
+    #     if len(hits) >=3:
+    #         recon_hits.append(hits)
     
     # print(np.array(recon_hits[0])[])
-    z, x, y = np.array(recon_hits[0])[:,0].flatten(), np.array(recon_hits[0])[:,1].flatten(), np.array(recon_hits[0])[:,2].flatten()
-    print(z, x, y)
-    fit_3d(z, x, y)
+    # print(z, x, y)
+    # fit_3d(z, x, y)
 
     # ax3d.scatter(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
     # linepts = fit_3d(particles[0].z_arr, particles[0].x_arr, particles[0].y_arr)
@@ -96,33 +95,45 @@ if __name__ == "__main__":
     unif_rapidity = np.linspace(0, 10, 100)
     effs = []
     count = 0
-    # for num in unif_rapidity:
-    #     count +=1
-    #     # print(count)
-    #     particles = particle_generate(10, num, z_all)
-    #     recon_efficiency = recon_eff(particles, velo_detect)[0]
-    #     effs.append(recon_efficiency)
+
     
-
-    # fig, ax = plt.subplots(1)
-    # ax.plot(unif_rapidity, effs)
-    # ax.set_xlabel("Rapidity $\eta$")
-    # ax.set_ylabel("Reconstruction efficiency")
-
-
-    # print(linepts[0])
-    # print(linepts[1])
-    # slope = np.sqrt((linepts[1][0] - linepts[0][0]) ** 2 + (linepts[1][1] - linepts[0][1]) ** 2 + (linepts[1][2] - linepts[0][2]) ** 2)
-    # print(slope)
-    # print(list(zip(rand_rapidity, effs)))
-    
-
     # uniform sampling
-    uniform_particles = uniform_particle_generate((0.0001, 2 * np.pi), (3.5, 4.5), 10, z_all)
-    for particle_ in uniform_particles:
-        particle_.set_pmag(10)
-        # particle_.transverse_momentum()
-    # square = uniform_particles[1].x_arr**2 + uniform_particles[1].y_arr**2 + uniform_particles[1].z_arr**2
-    # root = squ    are ** 0.5
-    # print(root)
+    # ax3d1 = plt.figure().add_subplot(projection="3d")
+    # plot_sensor_3d(axis=ax3d1)
+    p_ts = []
+    sigmas = []
+    etas = []
+    phis = []
+    uniform_particles, phi_values, eta_values = uniform_particle_generate((0, 2 * np.pi), (1.0, 2), 20, z_all)
+    for count, particle_ in enumerate(uniform_particles):
+        particle_.set_pmag(10)  # setting the particles total momentum in GeV
+        hits = velo_detect.hits(particle_)
+        if len(hits) >= 3:
+            ax3d.plot(particle_.z_arr, particle_.x_arr,  particle_.y_arr,  marker=None, alpha=0.5, color="green")
+            z, x, y = np.array(hits).flatten(), np.array(hits).flatten(), np.array(hits).flatten()
+            fit_result  = fit_3d(z, x, y, plot=False)
+            print(f"fit: {fit_result}")
+            p_t = particle_.transverse_momentum(*fit_result[0:2], 10)
+            sigma_p_t = particle_.p_resolution(*fit_result)
+            
+            print(f"p_t = {p_t}, sigma_p_t = {sigma_p_t}")
+            p_ts.append(p_t)
+            etas.append(eta_values[count])
+            phis.append(phi_values[count])
+            sigmas.append(sigma_p_t)
+            
+    # uniform_particles[3].set_pmag(10)
+    
+    pt_fig, pt_ax = plt.subplots(2)
+    # print(len(phis), len(sigma_p_t))
+    # pt_ax[0].errorbar(phis, sigma_p_t)
+    # pt_ax[1].errorbar(etas, sigma_p_t)
+
+    pt_ax[0].plot(phis, p_ts)
+    pt_ax[0].set_xlabel("$\phi$")
+    pt_ax[0].set_ylabel("$P_T$")
+    pt_ax[1].plot(etas, p_ts)
+    pt_ax[1].set_xlabel("$\eta$")
+    pt_ax[1].set_ylabel("$P_T$")
+    pt_fig.tight_layout()
     plt.show()

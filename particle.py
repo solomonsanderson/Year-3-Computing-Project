@@ -91,29 +91,39 @@ class particle:
         current_pmag = np.linalg.norm(self.p_arr)
         unit_vector = (1 / current_pmag) * self.p_arr
         new_p = unit_vector * momentum_magnitude
-        print(new_p)
-        print(np.linalg.norm(new_p))
+        # print(new_p)
+        # print(np.linalg.norm(new_p))
         self.p_arr = np.array(new_p)  # consider removing the individual pxpypz part 
     
 
-    def transverse_momentum(self):
+    def transverse_momentum(self, m_x, m_y, p_tot):
         '''
         
         '''
 
-        #  TODO: fix this so that it uses smeared momentum values
-        p_t = np.linalg.norm(np.array([self.p_arr[0], self.p_arr[1]]))  # Cannot do this as it does not take the error that we introduce through the fit into account 
-        
-        self.p_t = p_t
+
+        # px_over_py = np.tan(theta_x)
+        # py_over_pz = np.tan(theta_y)
+        m_squared = m_x ** 2 + m_y ** 2
+        p_t = p_tot * np.sqrt(m_squared/(m_squared + 1))
+        return p_t
 
 
 
-    def p_resolution(self, m_x, sigma_mx, m_y, sigma_my):
-        theta_x, theta_y = np.arctan(m_x), np.arctan(m_y)
-        p_x = p_xz * np.sin(theta_x)
-        p_y = p_yz * np.sin(theta_y)
-        p_t = np.linalg(np.array([p_x, p_y]))
-        sigma_pt = (p_x *  sigma_mx *(np.cos(theta_x)) ** 3) + (p_y * sigma_my * (np.cos(theta_y)) ** 3)
+    # def p_resolution(self, m_x, sigma_mx, m_y, sigma_my):
+    #     theta_x, theta_y = np.arctan(m_x), np.arctan(m_y)
+    #     p_x = p_xz * np.sin(theta_x)
+    #     p_y = p_yz * np.sin(theta_y)
+    #     p_t = np.linalg(np.array([p_x, p_y]))
+    #     sigma_pt = (p_x *  sigma_mx *(np.cos(theta_x)) ** 3) + (p_y * sigma_my * (np.cos(theta_y)) ** 3)
+
+    def p_resolution(self, m_x, m_y, m_x_error, m_y_error):
+        '''
+        '''
+
+
+        sigma_p_t = (2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))/(1 + 2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))
+        return sigma_p_t
 
 
 
