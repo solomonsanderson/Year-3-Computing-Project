@@ -121,8 +121,9 @@ class particle:
         '''
         '''
 
-
+        # print(m_x, m_y, m_x_error, m_y_error)
         sigma_p_t = (2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))/(1 + 2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))
+        # print(sigma_p_t)
         return sigma_p_t
 
 

@@ -7,8 +7,6 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 from sensor import left_sensor, right_sensor
 from particle import particle
-from sensor import plot_sensor, plot_sensor_3d
-from itertools import product, combinations
 import random
 from scipy.optimize import curve_fit
 
@@ -29,11 +27,16 @@ def pr_theta(pseudo_rapidity):
     return theta
 
 
-def particle_generate(number, pseudo_rapidity, z):
-    '''Generates a given number of particle objects with pseudo rapidity at 
-    given z values.
+
+def uniform_particle_generate(phi_range: tuple, eta_range: tuple, number: int, z):
+    '''Generates a given number of particle objects with pseudo rapidity in the
+    given phi and eta ranges.
     
     Args:
+        phi_range - tuple of floats, the range of phis that particles can be
+        generated with.
+        eta_range - tuple of floats, the range of etas that particles can be
+        generated with.
         number - int, the number of particle objects to be created.
         pseudo_rapidity - int/ float, the pseudo rapidity of the desired particles.
         z - array/ int, the z positions of the sensors.
@@ -41,35 +44,17 @@ def particle_generate(number, pseudo_rapidity, z):
     Returns:
         particles - list, A list of particle objects, created using the 
         particle class.
-    '''
-
-
-    theta = pr_theta(pseudo_rapidity)
-    ys = z * np.tan(theta)
-
-    particles = []
-
-    
-    while len(particles) < number:
-        phi = np.random.uniform(0, 2 * np.pi)
-        xs = z * ((np.tan(theta))/(np.tan(phi)))
-        part_obj = particle((xs[0] ,ys[0], z[0]), (0,0,0))
-        part_obj.calibrate(z)
-        particles.append(part_obj)
-    
-    return particles
-
-
-def uniform_particle_generate(phi_range, eta_range, number, z):
-    '''
-    
+        phi_values - numpy array, An array of the phi values of the generated
+        particles.
+        eta_values - numpy array, An array of the eta values of the generated 
+        particles
     '''
 
 
     phi_values = np.random.uniform(*phi_range, size=number)
     eta_values = np.random.uniform(*eta_range, size=number)
-    print(f"phis = {phi_values}")
-    print(f"etas = {eta_values}")
+    # print(f"phis = {phi_values}")
+    # print(f"etas = {eta_values}")
     particles = []
 
 
@@ -81,8 +66,7 @@ def uniform_particle_generate(phi_range, eta_range, number, z):
         part_obj.calibrate(z)
         particles.append(part_obj)
 
-    
-    # print(particles)
+
     return particles, phi_values, eta_values
 
 
@@ -113,11 +97,13 @@ def recon_eff(particles, velo_obj):
 
 
 def recon_eta(pr_range, z, velo):
-    ''''''
+    ''' Calculates the reconstruction efficiency of a given velo object 
+    '''
     etas = np.linspace(*pr_range, 100)
     effs = []
     for eta in etas:
-        particles = particle_generate(10, eta, z)
+        # particles = particle_generate(10, eta, z)
+        particles = uniform_particle_generate((0, 2 * np.pi), (eta, eta), 10, z)[0]
         eff, recon_hits = recon_eff(particles, velo)
         effs.append(eff)
         # print(eff)
@@ -136,9 +122,9 @@ def fit_3d(z, x, y, plot = False):
     principle component.
 
     Args:
+        z - list/array, a list or array of z values to be fitted
         x - list/ array, a list or array of x values to be fitted.
         y - list/array, a list or array of y values to be fitted.
-        z - list/array, a list or array of z values to be fitted
     
     returns: 
         linepts - numpy array, an array of points for a straight line
@@ -154,14 +140,13 @@ def fit_3d(z, x, y, plot = False):
 
     popt_yz, pcov_yz = curve_fit(line, z, y)
     m_y = popt_yz[0]
-    m_y_sigma = xz_errors
     theta_y = np.arctan(popt_yz[0])
     yz_errors = np.diag(pcov_yz)
-
+    m_y_sigma = yz_errors[0]
     # print(z,x)
     if plot:
+        
         fig, axs = plt.subplots(2)
-
         axs[0].plot(z, line(z, *popt_xz), "r--", alpha=0.5, label = f"straight line fit \nm = {popt_xz[0]:.2} $\pm$ {xz_errors[0]:.2}\nc = {popt_xz[1]:.2} $\pm$ {xz_errors[1]:.2}")
         axs[0].scatter(z, x)
         axs[0].set_title("Straight Line Fit")
