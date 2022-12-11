@@ -48,20 +48,15 @@ class particle:
 
 
         nearest_z = z_arr[(np.abs(z_arr - self.z_0)).argmin()]
-
         z_diff = nearest_z - self.z_0  # distance between starting point and first sensor
-        multiplier = self.p_z/z_diff
-        z_mult = multiplier * self.p_z
-        self.x_mult = (multiplier * self.p_x) / z_mult # calculating the in momentum per z
-        self.y_mult = (multiplier * self.p_y) / z_mult
-        self.z_mult = z_mult / z_mult  # normalising z
+        
+        self.x_mult = self.p_x/self.p_z
+        self.y_mult = self.p_y/self.p_z
 
         self.z_arr = z_arr
         self.x_arr = z_arr * self.x_mult
         self.y_arr = z_arr * self.y_mult 
-
-        # print(x_arr, y_arr)
-
+        
 
     def position(self, z_value):
         '''Calculates the position of the particle in the x and y plane and
