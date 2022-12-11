@@ -63,7 +63,7 @@ def uniform_particle_generate(phi_range: tuple, eta_range: tuple, number: int, z
         ys = z * np.tan(theta)
         xs = z * ((np.tan(theta))/(np.tan(phi)))
         part_obj = particle((xs[0] ,ys[0], z[0]), (0,0,0))
-        part_obj.calibrate(z)
+        part_obj.xy_pos(z)
         particles.append(part_obj)
 
 
@@ -229,7 +229,7 @@ class velo:
 
         hits = 0
 
-        particle.calibrate(self.zs)
+        particle.xy_pos(self.zs)
         
         # particle.calibrate(self.left_sensor_z)  # may be able to do this above
         # particle.calibrate(self.right_sensor_z)

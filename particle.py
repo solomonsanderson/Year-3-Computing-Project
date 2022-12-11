@@ -35,7 +35,7 @@ class particle:
         self.x_0, self.y_0, self.z_0 = start
 
 
-    def calibrate(self, z_arr):
+    def xy_pos(self, z_arr):
         '''Takes a z_arr to calculate the nearest z point to the starting 
         position. Uses this to calculate the trajectory of the particle and the
         x, y, z values of its path.
@@ -46,9 +46,6 @@ class particle:
         Returns:
             None.'''
 
-
-        nearest_z = z_arr[(np.abs(z_arr - self.z_0)).argmin()]
-        z_diff = nearest_z - self.z_0  # distance between starting point and first sensor
         
         self.x_mult = self.p_x/self.p_z
         self.y_mult = self.p_y/self.p_z
@@ -56,11 +53,11 @@ class particle:
         self.z_arr = z_arr
         self.x_arr = z_arr * self.x_mult
         self.y_arr = z_arr * self.y_mult 
-        
+
 
     def position(self, z_value):
-        '''Calculates the position of the particle in the x and y plane and
-        returns the coordinates in the format (x, y, z).
+        ''' Returns the x and y values of a particles position for a given 
+        z-value.
         
         Args:
             z_value - float/ int, the z value at which the position of the
@@ -71,7 +68,6 @@ class particle:
             z position.'''
 
 
-        # print(z_value)
         index = np.where(z_value == self.z_arr)
         # print(self.x_arr[index], self.y_arr[index], self.z_arr[index])
         return self.x_arr[index], self.y_arr[index], self.z_arr[index] 
