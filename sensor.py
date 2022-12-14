@@ -1,9 +1,23 @@
-'''Crreating classes for the left and right side VELO sensors'''
+''' sensor.py
+
+This script allows the user to create left and right sensor arrays for the VELO
+detector at LHCb. 
+
+This script requires numpy and the script cube_plot.py.
+
+This script contains the following functions:
+    * plot_sensor - plots one of the velo sensors in 2 dimensions.
+    * plot_sensor_3d - plots one of the velo sensors in 3 dimensions.
+
+It also contains the following classes:
+    * right_sensor - class describing the right hand sensors of the VELO
+      detector. 
+    * left_sensor - class describing the left hand sensors of the VELO detector.
+'''
 
 
 import matplotlib.pyplot as plt
 import numpy as np
-from itertools import product, combinations
 from cube_plot import plotCubeAt2
 
 

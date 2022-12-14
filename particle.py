@@ -1,5 +1,15 @@
-'''Creating a particle class'''
+''' particle.py
 
+Allows the create particle objects to be used in the modelling of the sensor.
+
+This script requires the numpy library. 
+
+It contains the following classes:
+    * particle - creates a particle object which has a given momentum and
+    start position. The momentum can be set to the desired magnitude. Has 
+    methods to determine the transverse momentum, its error and the impact
+    parameter.
+'''
 
 import numpy as np
 
@@ -56,6 +66,7 @@ class particle:
         # print(self.z_0)
         self.z_arr = z_arr + self.z_0
         # self.z_arr = 
+
 
     def position(self, z_value):
         ''' Returns the x and y values of a particles position for a given 
@@ -128,6 +139,19 @@ class particle:
 
     def p_resolution(self, m_x, m_y, m_x_error, m_y_error):
         '''
+        Calculates the resolution of the transverse momentum values.
+
+        Args:
+            m_x - float, gradient of our straight-line fit in the xz plane.
+            m_y - float, gradient of our straight line fit in the yx plane.
+            m_x_error - float, the error on m_x given by the covariance matrix
+            from scipy.curve_fit.
+            m_y_error - float, the error on m_y given by the covariance matrix
+            from scipy.curve_fit.
+        
+        Returns:
+            sigma_p_t - float, the error on the transverse momentum of the
+            particle.
         '''
 
         # print(m_x, m_y, m_x_error, m_y_error)
@@ -135,7 +159,21 @@ class particle:
         # print(sigma_p_t)
         return sigma_p_t
 
+
     def impact_parameter(self):
+        '''
+        Calculates the impact parameter (closest distance of approach to the 
+        true origin) of our particle.
+        
+        Args:
+            None.
+        
+        Returns:
+            dist - float, the shortest distance between the particles true origin and
+            the particle track.
+            '''
+
+
         x_1, x_2 = self.x_arr[0], self.x_arr[1]
         y_1, y_2 = self.y_arr[0], self.y_arr[1]
         z_1, z_2 = self.z_arr[0], self.z_arr[1]

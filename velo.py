@@ -1,4 +1,24 @@
-'''creating a class for the velo sensor'''
+'''velo.py
+
+Creating a class for the velo sensor using the left_sensor and right_sensor
+classes from sensor.py.
+
+This script requires the numpy, matplotlib, random and scipy libraries. 
+
+This script contains the following functions:
+    * pr_theta - converts pseudorapidity values to theta values, where theta
+    is the angle to the beam axis.
+    * line - a simple function defining the equation of a straight line, this
+    is to be used with curve_fit perform straight-line fits.
+    * fit_3d - a function which fits straight lines to both the xz and yz
+    planes and returns their gradient.
+
+It also contains the following classes:
+    * velo - class representing the vertex locator using the left_sensor and
+    right_sensor classes, contains methods for calculating hit positions, the
+    reconstruction efficiency, the reconstruction efficiency as a function of 
+    pseudorapidity and generating particles with uniform randomly sampled
+    pseudorapidities and azimuth angles.  '''
 
 
 import numpy as np
@@ -40,8 +60,7 @@ def line(x, m, c):
     
 
 def fit_3d(z, x, y, plot = False):
-    ''' Fits a straight line to a set of points in 3d space using the First 
-    principle component.
+    ''' Fits a straight line to a set of points in 3d space using the curve_fit.
 
     Args:
         z - list/array, a list or array of z values to be fitted
@@ -49,8 +68,12 @@ def fit_3d(z, x, y, plot = False):
         y - list/array, a list or array of y values to be fitted.
     
     returns: 
-        linepts - numpy array, an array of points for a straight line
-        which has been fit to the data.
+        m_x - gradient output by a straight-line fit to data in the xz plane.
+        m_y - gradient output by a straight-line fit to data in the yz plane.
+        m_x_sigma - error on the value m_x, given by the curve_fit covariance 
+        matrix.
+        m_y_sigma - error on the value m_y, given by the curve_fit covariance 
+        matrix.
     '''
 
 
@@ -68,12 +91,14 @@ def fit_3d(z, x, y, plot = False):
 
     if plot:
         fig, axs = plt.subplots(2)
-        axs[0].plot(z, line(z, *popt_xz), "r--", alpha=0.5, label = f"straight line fit \nm = {popt_xz[0]:.2} $\pm$ {xz_errors[0]:.2}\nc = {popt_xz[1]:.2} $\pm$ {xz_errors[1]:.2}")
+        axs[0].plot(z, line(z, *popt_xz), "r--", alpha=0.5, 
+            label = f"straight line fit \nm = {popt_xz[0]:.2} $\pm$ {xz_errors[0]:.2}\nc = {popt_xz[1]:.2} $\pm$ {xz_errors[1]:.2}")
         axs[0].scatter(z, x)
         axs[0].set_title("Straight Line Fit")
         axs[0].set_xlabel("z"), axs[0].set_ylabel("x")
 
-        axs[1].plot(z, line(z, *popt_yz), "r--", alpha=0.5, label=f"straight line fit \nm = {popt_yz[0]:.2} $\pm$ {yz_errors[0]:.2} \nc = {popt_yz[1]:.2} $\pm$ {yz_errors[1]:.2}")
+        axs[1].plot(z, line(z, *popt_yz), "r--", 
+            alpha=0.5, label=f"straight line fit \nm = {popt_yz[0]:.2} $\pm$ {yz_errors[0]:.2} \nc = {popt_yz[1]:.2} $\pm$ {yz_errors[1]:.2}")
         axs[1].scatter(z, y)
         axs[1].set_title("Straight Line Fit")
         axs[1].set_xlabel("z"), axs[1].set_ylabel("y")
@@ -273,7 +298,19 @@ class velo:
 
 
     def recon_eta(self, pr_range, start_pos):
-        ''' Calculates the reconstruction efficiency of a given velo object 
+        ''' Calculates the reconstruction efficiency of a given velo object.
+
+        Args:
+            pr_range - tuple of floats, the range which psuedorapidity values
+            can lie within,.
+            start_pos - tuple of floats, the position at which the the particle
+            is generated. 
+        
+        Returns:
+            etas - array of floats, the pseudorapidity values at which the
+            particles are generated.
+            effs - array of floats, the reconstruction efficiencies that each
+            set of particles has.
         '''
         etas = np.linspace(*pr_range, 100)
         effs = []
