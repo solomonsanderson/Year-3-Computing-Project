@@ -27,92 +27,14 @@ def pr_theta(pseudo_rapidity):
     return theta
 
 
-
-def uniform_particle_generate(phi_range: tuple, eta_range: tuple, number: int, z):
-    '''Generates a given number of particle objects with pseudo rapidity in the
-    given phi and eta ranges.
-    
-    Args:
-        phi_range - tuple of floats, the range of phis that particles can be
-        generated with.
-        eta_range - tuple of floats, the range of etas that particles can be
-        generated with.
-        number - int, the number of particle objects to be created.
-        pseudo_rapidity - int/ float, the pseudo rapidity of the desired particles.
-        z - array/ int, the z positions of the sensors.
-    
-    Returns:
-        particles - list, A list of particle objects, created using the 
-        particle class.
-        phi_values - numpy array, An array of the phi values of the generated
-        particles.
-        eta_values - numpy array, An array of the eta values of the generated 
-        particles
-    '''
-
-
-    phi_values = np.random.uniform(*phi_range, size=number)
-    eta_values = np.random.uniform(*eta_range, size=number)
-    # print(f"phis = {phi_values}")
-    # print(f"etas = {eta_values}")
-    particles = []
-
-
-    for phi, eta in list(zip(phi_values, eta_values)):
-        theta = pr_theta(eta)
-        ys = z * np.tan(theta)
-        xs = z * ((np.tan(theta))/(np.tan(phi)))
-        part_obj = particle((xs[0] ,ys[0], z[0]), (0,0,0))
-        part_obj.xy_pos(z)
-        particles.append(part_obj)
-
-
-    return particles, phi_values, eta_values
-
-
-def recon_eff(particles, velo_obj):
-    ''' Calculates the reconstruction efficiency for a given set of particles.
-    
-    Args:
-        particles - list, A list of particle objects.
-
-    Returns:
-        efficiency - float, the reconstruction efficency of the given set 
-        of particles.
-    '''
-
-
-    reconned = 0
-    reconstructed_hits = []
-    for par in particles:
-        hits = velo_obj.hits(par)
-        if len(hits) >= 3:
-            reconned += 1
-            reconstructed_hits.append(hits)
-
-        # ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None)
-
-    efficiency = reconned / len(particles)
-    return efficiency, reconstructed_hits
-
-
-def recon_eta(pr_range, z, velo):
-    ''' Calculates the reconstruction efficiency of a given velo object 
-    '''
-    etas = np.linspace(*pr_range, 100)
-    effs = []
-    for eta in etas:
-        # particles = particle_generate(10, eta, z)
-        particles = uniform_particle_generate((0, 2 * np.pi), (eta, eta), 10, z)[0]
-        eff, recon_hits = recon_eff(particles, velo)
-        effs.append(eff)
-        # print(eff)
-    
-    return etas, effs
-    
-
-
 def line(x, m, c):
+    '''Equation of a straight line, to be used with scipy.curve_fit. 
+    
+    Args:
+        x - float/ array, the x values over which the line is defined.
+        m - float, the gradient of the line.
+        c - float, the y-intercept of the line '''
+
     y = m * x + c
     return y
     
@@ -136,16 +58,15 @@ def fit_3d(z, x, y, plot = False):
     m_x = popt_xz[0]
     xz_errors = np.diag(pcov_xz)
     m_x_sigma = xz_errors[0]
-    theta_x = np.arctan(popt_xz[0])
+    # theta_x = np.arctan(popt_xz[0])
 
     popt_yz, pcov_yz = curve_fit(line, z, y)
     m_y = popt_yz[0]
-    theta_y = np.arctan(popt_yz[0])
+    # theta_y = np.arctan(popt_yz[0])
     yz_errors = np.diag(pcov_yz)
     m_y_sigma = yz_errors[0]
-    # print(z,x)
+
     if plot:
-        
         fig, axs = plt.subplots(2)
         axs[0].plot(z, line(z, *popt_xz), "r--", alpha=0.5, label = f"straight line fit \nm = {popt_xz[0]:.2} $\pm$ {xz_errors[0]:.2}\nc = {popt_xz[1]:.2} $\pm$ {xz_errors[1]:.2}")
         axs[0].scatter(z, x)
@@ -161,8 +82,6 @@ def fit_3d(z, x, y, plot = False):
         axs[1].legend()
 
         fig.tight_layout()
-
-    
     
     # print(np.degrees(zx_angle), np.degrees(zy_angle))
     
@@ -183,7 +102,7 @@ class velo:
         right_sensor_z - list/array, a list or array of z locations of the right
         sensors of the detector.
         zs - numpy array, a numpy array containing the z values of both the left 
-        and right sensors.
+        and right sensors.  
     '''
 
 
@@ -262,8 +181,112 @@ class velo:
 
 
         return hits
+    
+
+    def uniform_particle_generate(self, phi_range: tuple, eta_range: tuple, number: int, start_pos_range=(0,0,0)):
+        '''Generates a given number of particle objects with pseudo rapidity in the
+        given phi and eta ranges.
+
+        Args:
+            phi_range - tuple of floats, the range of phis that particles can be
+            generated with.
+            eta_range - tuple of floats, the range of etas that particles can be
+            generated with.
+            number - int, the number of particle objects to be created.
+            pseudo_rapidity - int/ float, the pseudo rapidity of the desired particles.
+            z - array/ int, the z positions of the sensors.
+
+        Returns:
+            particles - list, A list of particle objects, created using the 
+            particle class.
+            phi_values - numpy array, An array of the phi values of the generated
+            particles.
+            eta_values - numpy array, An array of the eta values of the generated 
+            particles
+        '''
 
 
+        phi_values = np.random.uniform(*phi_range, size=number)
+        eta_values = np.random.uniform(*eta_range, size=number)
+        # print(eta_values)
+
+        start_pos_vals = np.repeat([[0, 0, 0]], repeats=number, axis=0)
+
+
+        if start_pos_range != (0,0,0):
+            x_start = np.random.uniform(start_pos_range[0][0], start_pos_range[0][1], size=number)
+            y_start = np.random.uniform(start_pos_range[1][0], start_pos_range[1][1], size=number)
+            z_start = np.random.uniform(start_pos_range[2][0], start_pos_range[2][1], size=number)
+            start_pos_vals = np.array(np.transpose([x_start, y_start, z_start]))
+            # print(f"starpv{start_pos_vals}")
+        # print(start_pos_vals)
+        
+        # print(f"phis = {phi_values}")
+        # print(f"etas = {eta_values}")
+        self.particles = []
+        # print(start_pos_vals)
+
+        for count, eta in enumerate(eta_values):
+            # print(start_pos_vals[count])
+            # try enumerate here with x,y,z
+            # need to only give one value for x y z in each iteration
+            # print(f"phi{phi}, eta{eta}")
+            theta = pr_theta(eta_values[count])
+            # print(f"start{start}")
+            start = start_pos_vals[count]
+            ys = self.zs * np.tan(theta)
+            xs = self.zs * ((np.tan(theta))/(np.tan(phi_values[count])))
+            part_obj = particle((xs[0] ,ys[0], self.zs[0]), start)
+            part_obj.xy_pos(self.zs)
+            self.particles.append(part_obj)
+
+
+        return self.particles, phi_values, eta_values
+
+
+    def recon_eff(self):
+        ''' Calculates the reconstruction efficiency for a given set of particles.
+
+        Args:
+            particles - list, A list of particle objects.
+
+        Returns:
+            efficiency - float, the reconstruction efficency of the given set 
+            of particles.
+        '''
+
+
+        reconned = 0
+        reconstructed_hits = []
+        for par in self.particles:
+            hts = self.hits(par)
+            # if hts != []:
+            #     print(hts)
+
+            if len(hts) >= 3:
+                reconned += 1
+                reconstructed_hits.append(hts)
+
+            # ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None)
+        efficiency = reconned / len(self.particles)
+        return efficiency, reconstructed_hits
+
+
+    def recon_eta(self, pr_range, start_pos):
+        ''' Calculates the reconstruction efficiency of a given velo object 
+        '''
+        etas = np.linspace(*pr_range, 100)
+        effs = []
+        for eta in etas:
+            # particles = particle_generate(10, eta, z)
+            # print(eta)
+            # print(start_pos)
+            particles = self.uniform_particle_generate((0, 2 * np.pi), (eta, eta), 10, start_pos)[0]
+            eff, recon_hits = self.recon_eff()
+            effs.append(eff)
+            
+        # print(etas, effs)
+        return etas, effs
 
 if __name__ == "__main__":
     pass

@@ -1,5 +1,8 @@
 '''
+The main file of my project where all of the other files are called from and
+used. 
 
+This file outputs...
 '''
 
 
@@ -9,7 +12,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
 from particle import particle
-from velo import velo, fit_3d, uniform_particle_generate, recon_eff, recon_eta
+from velo import velo, fit_3d
 from sensor import plot_sensor_3d
 
 
@@ -49,15 +52,14 @@ if __name__ == "__main__":
 
     ax3d.legend(handles = legend_elements)
 
-    particles = uniform_particle_generate((0, 2 * np.pi), (4,4), 50, z_all)[0]  # Generatess 50 particles with a pseudo rapidity of 4
-    reconstruction_eff, reconstruction_hits = recon_eff(particles, velo_detect)
+    particles = velo_detect.uniform_particle_generate((0, 2 * np.pi), (4,4), 50)[0]  # Generatess 50 particles with a pseudo rapidity of 4
+    reconstruction_eff, reconstruction_hits = velo_detect.recon_eff()
     print(f"reconstruction efficiency {reconstruction_eff}")
 
 
-    effs = []
-    count = 0
 
-    etas, effs = recon_eta([-12, 12], z_all, velo_detect)
+    etas, effs = velo_detect.recon_eta([-12, 12], ([0, 0], [0, 0], [0, 0]))
+    
     fig_eff, ax_eff = plt.subplots()
     ax_eff.plot(etas, effs, color="blue")
     ax_eff.set_xlabel("Pseudorapdidity, $\eta$")
@@ -69,7 +71,7 @@ if __name__ == "__main__":
     sigmas = []
     etas = []
     phis = []
-    uniform_particles, phi_values, eta_values = uniform_particle_generate((0, 2  * np.pi), (-10, 6), 10000, z_all)
+    uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 100, ([-5, 5], [-5, 5], [0, 0]))
     for count, particle_ in enumerate(uniform_particles):
         particle_.set_pmag(10)  # setting the particles total momentum in GeV
         hits = velo_detect.hits(particle_)
@@ -86,10 +88,11 @@ if __name__ == "__main__":
             p_ts.append(p_t)
             etas.append(eta_values[count])
             phis.append(phi_values[count])
-            # print(f"sigma{sigma_p_t}")
             sigmas.append(sigma_p_t)
+            print(f"sigma{sigma_p_t}")
     
-
+    fig_hist, ax_hist = plt.subplots(1)
+    ax_hist.hist(sigmas, bins = 100)
     
     pt_fig, pt_ax = plt.subplots(2)
 
@@ -100,7 +103,7 @@ if __name__ == "__main__":
     width = (eta_hi - eta_lo)/n_bins
     bins = [eta_lo + i*width for i in range(n_bins + 1)]
     bin_centres = [(bins[i] + bins[i+1])/2 for i in range(len(bins) -1 )]
-    print(f"bin cents {bin_centres}")
+    # print(f"bin cents {bin_centres}")
     # print(f"bin pos{bin_centres}")
 
     indices  = np.digitize(etas, bins) #< 100 indices 1
@@ -133,7 +136,7 @@ if __name__ == "__main__":
     width = (phi_hi - phi_lo)/n_bins
     bins = [phi_lo + i*width for i in range(n_bins + 1)]
     bin_centres = [(bins[i] + bins[i+1])/2 for i in range(len(bins) -1 )]
-    print(f"bin cents {bin_centres}")
+    # print(f"bin cents {bin_centres}")
     # print(f"bin pos{bin_centres}")
 
     indices  = np.digitize(phis, bins) #< 100 indices 1
@@ -159,4 +162,23 @@ if __name__ == "__main__":
     # pt_ax[1].set_ylabel("$P_T$")
     pt_fig.tight_layout()
     pt_ax[1].set_title("Plot of $P_T$ against $\phi$. With 10000 Points")
+
+    # investigating the effect of different starting positions on the reconstruction efficiency.
+    print("range of starts")
+    # velo_detector = velo(z_left_sensors, z_right_sensors)
+    # particles = velo_detector.uniform_particle_generate((0, 2 * np.pi), (4,4), 50, ([0,0],[0,0],[0, 0]))[0]  # Generatess 50 particles with a pseudo rapidity of 4
+    reconstruction_eff, reconstruction_hits = velo_detect.recon_eff()
+    print(f"range reconstruction efficiency {reconstruction_eff}")
+
+    etas, effs = velo_detect.recon_eta([-12, 12], ([-5, 5], [-5, 5], [0, 0]))
+    # print(len(velo_detect.particles))
+    for par in velo_detect.particles:
+        ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
+        print(f"impact_parameter {par.impact_parameter()}")
+
+    fig_zvar, ax_zvar = plt.subplots()
+    ax_zvar.plot(etas, effs, color="green")
+    ax_zvar.set_xlabel("Pseudorapdidity, $\eta$")
+    ax_zvar.set_ylabel("Reconstruction Efficiency")
+    ax_zvar.set_title("Plot of Track Reconstruction Efficiency vs. Pseudorapidity")
     plt.show()

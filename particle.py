@@ -29,7 +29,7 @@ class particle:
             None
         '''
 
-
+        # (start)
         self.p_arr = np.array(momentum)
         self.p_x, self.p_y, self.p_z = momentum
         self.x_0, self.y_0, self.z_0 = start
@@ -46,14 +46,16 @@ class particle:
         Returns:
             None.'''
 
+        # print(self.x_0)
         
         self.x_mult = self.p_x/self.p_z
         self.y_mult = self.p_y/self.p_z
-
-        self.z_arr = z_arr
-        self.x_arr = z_arr * self.x_mult
-        self.y_arr = z_arr * self.y_mult 
-
+        
+        self.x_arr = (z_arr * self.x_mult) + self.x_0
+        self.y_arr = (z_arr * self.y_mult) + self.y_0
+        # print(self.z_0)
+        self.z_arr = z_arr + self.z_0
+        # self.z_arr = 
 
     def position(self, z_value):
         ''' Returns the x and y values of a particles position for a given 
@@ -75,7 +77,13 @@ class particle:
         
     def set_pmag(self, momentum_magnitude):
         '''
-        
+        Sets the magnitude of the particle to the given value.
+
+        Args:
+            momentum_magnitude - float, the desired magnitude of the particle
+            momentum.
+        Returns:
+            None.
         '''
 
 
@@ -83,13 +91,23 @@ class particle:
         unit_vector = (1 / current_pmag) * self.p_arr
         new_p = unit_vector * momentum_magnitude
         # print(new_p)
-        # print(np.linalg.norm(new_p))
+        # (np.linalg.norm(new_p))
         self.p_arr = np.array(new_p)  # consider removing the individual pxpypz part 
     
 
     def transverse_momentum(self, m_x, m_y, p_tot):
         '''
-        
+        Calculates the transverse momentum of the particle.
+
+        Args:
+            m_x - float, the gradient of the line in the xz plane fitted by
+            scipy.curvefit.
+            m_y - float, the gradient of the line in the yz plane 
+            fitted by scipy.curvefit.
+            p_tot - float, the total momentum of the particle. 
+        Returns
+            p_t - float, the transverse momentum of the particle.The magnitude
+            of the momentum in the xy plane.
         '''
 
 
@@ -117,6 +135,17 @@ class particle:
         # print(sigma_p_t)
         return sigma_p_t
 
+    def impact_parameter(self):
+        x_1, x_2 = self.x_arr[0], self.x_arr[1]
+        y_1, y_2 = self.y_arr[0], self.y_arr[1]
+        z_1, z_2 = self.z_arr[0], self.z_arr[1]
+
+        t = -((x_2 - self.x_0) * (x_1 - x_2) + (y_2 - self.y_0) * (y_1 - y_2) + (z_2 - self.z_0) * (z_1 - z_2))/((x_1 - x_2) ** 2 + (y_1 - y_2) ** 2 + (z_1 - z_2) ** 2)
+        b_x = t * (x_1 - x_2) + (x_2 - self.x_0)
+        b_y = t * (y_1 - y_2) + (y_2 - self.y_0)
+        b_z = t * (z_1 - z_2) + (z_2 - self.z_0)
+        dist = np.linalg.norm([b_x, b_y, b_z])
+        return dist
 
 
 if __name__ == "__main__":
