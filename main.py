@@ -58,42 +58,49 @@ if __name__ == "__main__":
 
 
 
-    etas, effs = velo_detect.recon_eta([-12, 12], ([0, 0], [0, 0], [0, 0]))
+    zero_etas, zero_effs = velo_detect.recon_eta([-12, 12], ([0, 0], [0, 0], [0, 0]))
+    etas, effs = velo_detect.recon_eta([-12, 12], ([-5, 5], [-5, 5], [0, 0]))
+
     
     fig_eff, ax_eff = plt.subplots()
-    ax_eff.plot(etas, effs, color="blue")
+    ax_eff.plot(zero_etas, zero_effs, color="blue", alpha = 0.5)
+    ax_eff.plot(etas, effs, color="red", alpha = 0.5)
+    
     ax_eff.set_xlabel("Pseudorapdidity, $\eta$")
     ax_eff.set_ylabel("Reconstruction Efficiency")
     ax_eff.set_title("Plot of Track Reconstruction Efficiency vs. Pseudorapidity")
 
-
+    
     p_ts = []
     sigmas = []
     etas = []
     phis = []
-    uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 100, ([-5, 5], [-5, 5], [0, 0]))
+    uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 1000, ([-5, 5], [-5, 5], [0, 0]))
     for count, particle_ in enumerate(uniform_particles):
         particle_.set_pmag(10)  # setting the particles total momentum in GeV
         hits = velo_detect.hits(particle_)
         if len(hits) >= 3:
             # ax3d.plot(particle_.z_arr, particle_.x_arr,  particle_.y_arr,  marker=None, alpha=0.5, color="green")
-            # print(np.array(hits)[:,0])
             z, x, y = np.array(hits)[:,0].flatten(), np.array(hits)[:,1].flatten(), np.array(hits)[:,2].flatten()
             fit_result  = fit_3d(z, x, y, plot=False)
-            # print(f"fit: {fit_result}")b
             p_t = particle_.transverse_momentum(*fit_result[0:2], 10)
-            sigma_p_t = particle_.p_resolution(*fit_result)
-            
-            # print(f"p_t = {p_t}, sigma_p_t = {sigma_p_t}")
+            sigma_p_t = particle_.p_resolution(*fit_result[0:4])
+            true_p_t = (particle_.p_arr[0] ** 2 +  particle_.p_arr[1] ** 2 ) ** 0.5  # calculating the momentum from the initial momentum values.
+
+            # print(f"x{particle_.p_x}, y{particle_.p_y}")
+            # print(f"p_t = {p_t}, sigma_p_t = {sigma_p_t}, true p_t = {true_p_t}")
             p_ts.append(p_t)
             etas.append(eta_values[count])
             phis.append(phi_values[count])
             sigmas.append(sigma_p_t)
-            print(f"sigma{sigma_p_t}")
     
-    fig_hist, ax_hist = plt.subplots(1)
-    ax_hist.hist(sigmas, bins = 100)
-    
+    sigmas = np.array(sigmas)
+    p_ts = np.array(p_ts)
+    hist_fig, hist_ax = plt.subplots(1)
+    print(sigmas)
+    print(np.min(sigmas/p_ts), np.max(sigmas/p_ts))
+    # print(sigmas, p_ts)
+    hist_ax.hist(sigmas / p_ts, bins = "auto", range = (np.min(sigmas/p_ts), 0.2e-6))
     pt_fig, pt_ax = plt.subplots(2)
 
     eta_lo = -6
@@ -103,8 +110,6 @@ if __name__ == "__main__":
     width = (eta_hi - eta_lo)/n_bins
     bins = [eta_lo + i*width for i in range(n_bins + 1)]
     bin_centres = [(bins[i] + bins[i+1])/2 for i in range(len(bins) -1 )]
-    # print(f"bin cents {bin_centres}")
-    # print(f"bin pos{bin_centres}")
 
     indices  = np.digitize(etas, bins) #< 100 indices 1
     pt_plot = np.zeros(n_bins)
@@ -170,15 +175,19 @@ if __name__ == "__main__":
     reconstruction_eff, reconstruction_hits = velo_detect.recon_eff()
     print(f"range reconstruction efficiency {reconstruction_eff}")
 
-    etas, effs = velo_detect.recon_eta([-12, 12], ([-5, 5], [-5, 5], [0, 0]))
     # print(len(velo_detect.particles))
+    velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 100, ([-10, 10], [-10, 10], [0.001, 0.001]))
+    ips = []
+    sigma_ips = []
     for par in velo_detect.particles:
         ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
-        print(f"impact_parameter {par.impact_parameter()}")
+        ips.append(par.impact_parameter(*fit_result[0:2], *fit_result[4:6]))
+        sigma_ips.append(par.ip_resolution(*fit_result))
+    # print(ips)
+    # print(np.mean(ips), np.mean(sigma_ips))
 
-    fig_zvar, ax_zvar = plt.subplots()
-    ax_zvar.plot(etas, effs, color="green")
-    ax_zvar.set_xlabel("Pseudorapdidity, $\eta$")
-    ax_zvar.set_ylabel("Reconstruction Efficiency")
-    ax_zvar.set_title("Plot of Track Reconstruction Efficiency vs. Pseudorapidity")
+    # fig_zvar, ax_zvar = plt.subplots()
+    # ax_zvar.set_xlabel("Pseudorapdidity, $\eta$")
+    # ax_zvar.set_ylabel("Reconstruction Efficiency")
+    # ax_zvar.set_title("Plot of Track Reconstruction Efficiency vs. Pseudorapidity")
     plt.show()

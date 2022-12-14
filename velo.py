@@ -79,15 +79,20 @@ def fit_3d(z, x, y, plot = False):
 
     popt_xz, pcov_xz = curve_fit(line, np.array(z), np.array(x))
     m_x = popt_xz[0]
+    c_x = popt_xz[1]
     xz_errors = np.diag(pcov_xz)
     m_x_sigma = xz_errors[0]
+    c_x_sigma = xz_errors[1]
     # theta_x = np.arctan(popt_xz[0])
 
     popt_yz, pcov_yz = curve_fit(line, z, y)
     m_y = popt_yz[0]
+    c_y = popt_yz[1]
     # theta_y = np.arctan(popt_yz[0])
     yz_errors = np.diag(pcov_yz)
     m_y_sigma = yz_errors[0]
+    c_y_sigma = yz_errors[1]
+
 
     if plot:
         fig, axs = plt.subplots(2)
@@ -108,9 +113,8 @@ def fit_3d(z, x, y, plot = False):
 
         fig.tight_layout()
     
-    # print(np.degrees(zx_angle), np.degrees(zy_angle))
     
-    return m_x, m_y, m_x_sigma, m_y_sigma
+    return m_x, m_y, m_x_sigma, m_y_sigma, c_x, c_y, c_x_sigma, c_y_sigma 
     
 
 
@@ -171,14 +175,10 @@ class velo:
             hit_resolution - float, the resolution of the sensors. '''
 
 
-        hits = 0
-
         particle.xy_pos(self.zs)
-        
-        # particle.calibrate(self.left_sensor_z)  # may be able to do this above
-        # particle.calibrate(self.right_sensor_z)
 
         hits = []
+        
 
         for i in range(len(self.left_sensor_z)):
             l_x, l_y, l_z = particle.position(self.left_sensor_z[i])
@@ -312,7 +312,7 @@ class velo:
             effs - array of floats, the reconstruction efficiencies that each
             set of particles has.
         '''
-        etas = np.linspace(*pr_range, 100)
+        etas = np.linspace(*pr_range, 10)
         effs = []
         for eta in etas:
             # particles = particle_generate(10, eta, z)

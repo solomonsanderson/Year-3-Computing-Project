@@ -63,9 +63,7 @@ class particle:
         
         self.x_arr = (z_arr * self.x_mult) + self.x_0
         self.y_arr = (z_arr * self.y_mult) + self.y_0
-        # print(self.z_0)
         self.z_arr = z_arr + self.z_0
-        # self.z_arr = 
 
 
     def position(self, z_value):
@@ -82,7 +80,6 @@ class particle:
 
 
         index = np.where(z_value == self.z_arr)
-        # print(self.x_arr[index], self.y_arr[index], self.z_arr[index])
         return self.x_arr[index], self.y_arr[index], self.z_arr[index] 
 
         
@@ -101,10 +98,9 @@ class particle:
         current_pmag = np.linalg.norm(self.p_arr)
         unit_vector = (1 / current_pmag) * self.p_arr
         new_p = unit_vector * momentum_magnitude
-        # print(new_p)
-        # (np.linalg.norm(new_p))
         self.p_arr = np.array(new_p)  # consider removing the individual pxpypz part 
-    
+        self.xy_pos(self.z_arr)
+
 
     def transverse_momentum(self, m_x, m_y, p_tot):
         '''
@@ -122,20 +118,10 @@ class particle:
         '''
 
 
-        # px_over_py = np.tan(theta_x)
-        # py_over_pz = np.tan(theta_y)
         m_squared = m_x ** 2 + m_y ** 2
         p_t = p_tot * np.sqrt(m_squared/(m_squared + 1))
         return p_t
 
-
-
-    # def p_resolution(self, m_x, sigma_mx, m_y, sigma_my):
-    #     theta_x, theta_y = np.arctan(m_x), np.arctan(m_y)
-    #     p_x = p_xz * np.sin(theta_x)
-    #     p_y = p_yz * np.sin(theta_y)
-    #     p_t = np.linalg(np.array([p_x, p_y]))
-    #     sigma_pt = (p_x *  sigma_mx *(np.cos(theta_x)) ** 3) + (p_y * sigma_my * (np.cos(theta_y)) ** 3)
 
     def p_resolution(self, m_x, m_y, m_x_error, m_y_error):
         '''
@@ -148,7 +134,7 @@ class particle:
             from scipy.curve_fit.
             m_y_error - float, the error on m_y given by the covariance matrix
             from scipy.curve_fit.
-        
+
         Returns:
             sigma_p_t - float, the error on the transverse momentum of the
             particle.
@@ -156,11 +142,10 @@ class particle:
 
         # print(m_x, m_y, m_x_error, m_y_error)
         sigma_p_t = (2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))/(1 + 2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))
-        # print(sigma_p_t)
         return sigma_p_t
 
 
-    def impact_parameter(self):
+    def impact_parameter(self, m_x, m_y, c_x, c_y):
         '''
         Calculates the impact parameter (closest distance of approach to the 
         true origin) of our particle.
@@ -172,10 +157,13 @@ class particle:
             dist - float, the shortest distance between the particles true origin and
             the particle track.
             '''
+        
+        self.x_fitted = m_x * self.z_arr + c_x
+        self.y_fitted = m_y * self.z_arr + c_y
+        # print(f"x{x_fitted}")
 
-
-        x_1, x_2 = self.x_arr[0], self.x_arr[1]
-        y_1, y_2 = self.y_arr[0], self.y_arr[1]
+        x_1, x_2 = self.x_fitted[0], self.x_fitted[1]
+        y_1, y_2 = self.y_fitted[0], self.y_fitted[1]
         z_1, z_2 = self.z_arr[0], self.z_arr[1]
 
         t = -((x_2 - self.x_0) * (x_1 - x_2) + (y_2 - self.y_0) * (y_1 - y_2) + (z_2 - self.z_0) * (z_1 - z_2))/((x_1 - x_2) ** 2 + (y_1 - y_2) ** 2 + (z_1 - z_2) ** 2)
@@ -185,6 +173,25 @@ class particle:
         dist = np.linalg.norm([b_x, b_y, b_z])
         return dist
 
+    
+    def ip_resolution(self, m_x, m_y, m_x_sigma, m_y_sigma, c_x, c_y, c_x_sigma, c_y_sigma ):
+        '''
+        
+        '''
+        sigma_fit_x = self.z_arr * (m_x_sigma / m_x) + c_x_sigma
+        sigma_fit_y = self.z_arr * (m_y_sigma / m_y) + c_y_sigma
+
+        x_1, x_2 = self.x_fitted[0], self.x_fitted[1]
+        y_1, y_2 = self.y_fitted[0], self.y_fitted[1]
+        z_1, z_2 = self.z_arr[0], self.z_arr[1]
+        t = -((x_2 - self.x_0) * (x_1 - x_2) + (y_2 - self.y_0) * (y_1 - y_2) + (z_2 - self.z_0) * (z_1 - z_2))/((x_1 - x_2) ** 2 + (y_1 - y_2) ** 2 + (z_1 - z_2) ** 2)
+
+        sigma_t = (((sigma_fit_x/(x_2 - self.x_0)) + (2 * sigma_fit_x/(x_1 - x_2))) + ((sigma_fit_y/(y_2 - self.y_0)) + (2 * sigma_fit_y/(y_1 - y_2))))/(4 * sigma_fit_x + 4 * sigma_fit_y)
+        sigma_b_x = ((sigma_t * (2 * sigma_fit_x))/(t * (x_1 - x_2))) + sigma_fit_x
+        sigma_b_y = ((sigma_t * (2 * sigma_fit_y))/(t * (y_1 - y_2))) + sigma_fit_y
+        sigma_dist = sigma_b_x + sigma_b_y
+        return sigma_dist   
+    
 
 if __name__ == "__main__":
     pass
