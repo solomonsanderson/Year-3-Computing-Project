@@ -140,8 +140,23 @@ class particle:
             particle.
         '''
 
-        # print(m_x, m_y, m_x_error, m_y_error)
-        sigma_p_t = (2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))/(1 + 2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))
+        # print(m_x, m_y, m_x_eror, m_y_error)
+        # sigma_p_t = (2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))/(1 + 2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))
+        p_x = m_x * self.p_arr[2]
+        p_y = m_y * self.p_arr[2]
+        # print(self.p_arr)
+        p_tot = (p_x ** 2 + p_y ** 2 + self.p_arr[2] ** 2) ** 0.5
+
+
+        # print(self.p_arr[0])
+        # print(f"p_x{p_x}")
+        # print(f"p_y{p_y}, p_tot{p_tot}")
+        sigma_p_x =  m_y_error * np.abs(self.p_arr[2])
+        sigma_p_y =  m_x_error * np.abs(self.p_arr[2])
+        # print(f"self.p_arr[2] {self.p_arr[2]}")
+
+        sigma_p_t = sigma_p_x + sigma_p_y
+        # print(sigma_p_t)
         return sigma_p_t
 
 
