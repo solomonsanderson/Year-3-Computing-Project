@@ -75,7 +75,7 @@ if __name__ == "__main__":
     sigmas = []
     etas = []
     phis = []
-    uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 1000, ([-5, 5], [-5, 5], [0, 0]))
+    uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 10000, ([-5, 5], [-5, 5], [0, 0]))
     for count, particle_ in enumerate(uniform_particles):
         particle_.set_pmag(10)  # setting the particles total momentum in GeV
         hits = velo_detect.hits(particle_, hit_resolution=5)
@@ -180,15 +180,15 @@ if __name__ == "__main__":
     print(f"range reconstruction efficiency {reconstruction_eff}")
 
     # print(len(velo_detect.particles))
-    velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 100, ([-10, 10], [-10, 10], [0, 0]))
+    velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 100, ([-5, 5], [-5, 5], [0, 0]))
     ips = []
     sigma_ips = []
     for par in velo_detect.particles:
         ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
         ips.append(par.impact_parameter(*fit_result[0:2], *fit_result[4:6]))
         sigma_ips.append(par.ip_resolution(*fit_result))
-    # print(ips)
-    # print(np.mean(ips), np.mean(sigma_ips))
+    print(sigma_ips)
+    print(np.mean(ips), np.mean(sigma_ips))
 
     # fig_zvar, ax_zvar = plt.subplots()
     # ax_zvar.set_xlabel("Pseudorapdidity, $\eta$")

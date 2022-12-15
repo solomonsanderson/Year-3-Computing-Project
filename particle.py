@@ -155,7 +155,7 @@ class particle:
         sigma_p_y =  m_x_error * np.abs(self.p_arr[2])
         # print(f"self.p_arr[2] {self.p_arr[2]}")
 
-        sigma_p_t = (sigma_p_x / p_x) + (sigma_p_y / p_y)
+        sigma_p_t = 0.5 * ( 2 *((sigma_p_x / p_x) + (sigma_p_y / p_y)))/((p_x ** 2 + p_y ** 2) ** 0.5)
         # print(sigma_p_t)
         return sigma_p_t
 
@@ -200,11 +200,15 @@ class particle:
         y_1, y_2 = self.y_fitted[0], self.y_fitted[1]
         z_1, z_2 = self.z_arr[0], self.z_arr[1]
         t = -((x_2 - self.x_0) * (x_1 - x_2) + (y_2 - self.y_0) * (y_1 - y_2) + (z_2 - self.z_0) * (z_1 - z_2))/((x_1 - x_2) ** 2 + (y_1 - y_2) ** 2 + (z_1 - z_2) ** 2)
+        b_x = t * (x_1 - x_2) + (x_2 - self.x_0)
+        b_y = t * (y_1 - y_2) + (y_2 - self.y_0)
+        b_z = t * (z_1 - z_2) + (z_2 - self.z_0)
 
-        sigma_t = (((sigma_fit_x/(x_2 - self.x_0)) + (2 * sigma_fit_x/(x_1 - x_2))) + ((sigma_fit_y/(y_2 - self.y_0)) + (2 * sigma_fit_y/(y_1 - y_2))))/(4 * sigma_fit_x + 4 * sigma_fit_y)
-        sigma_b_x = ((sigma_t * (2 * sigma_fit_x))/(t * (x_1 - x_2))) + sigma_fit_x
-        sigma_b_y = ((sigma_t * (2 * sigma_fit_y))/(t * (y_1 - y_2))) + sigma_fit_y
-        sigma_dist = sigma_b_x + sigma_b_y
+        sigma_t = (sigma_fit_x ** 2 + sigma_fit_y ** 2)/( 2 * ((2 * sigma_fit_x)/(x_1 - x_2) + (2 * sigma_fit_y)/(y_1 - y_2)))
+        sigma_b_x = (sigma_t)/(t) + (2 * sigma_fit_x)/(x_1 - x_2) + sigma_fit_x
+        sigma_b_y = (sigma_t)/(t) + (2 * sigma_fit_y)/(y_1 - y_2) + sigma_fit_y
+        sigma_xyz = (2 * sigma_b_x)/(b_x) + (2 * sigma_b_y)/(b_y)
+        sigma_dist = 0.5  * ((sigma_xyz)/(b_x ** 2 + b_y ** 2 + b_z ** 2))
         return sigma_dist   
     
 
