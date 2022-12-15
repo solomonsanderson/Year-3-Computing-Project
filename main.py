@@ -101,7 +101,7 @@ if __name__ == "__main__":
     # print(sigmas)
     # print(np.min(sigmas/p_ts), np.max(sigmas/p_ts))
     print(f"momentum mean = {np.mean(p_ts)} +/- {np.mean(sigmas)}")
-    hist_ax.hist(sigmas/p_ts,bins = 100 , range = (0, 0.05))
+    hist_ax.hist(sigmas/p_ts,bins = 100 , range = (-0.05, 0.05))
     pt_fig, pt_ax = plt.subplots(2)
 
     eta_lo = -6

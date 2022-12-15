@@ -155,7 +155,7 @@ class particle:
         sigma_p_y =  m_x_error * np.abs(self.p_arr[2])
         # print(f"self.p_arr[2] {self.p_arr[2]}")
 
-        sigma_p_t = sigma_p_x + sigma_p_y
+        sigma_p_t = (sigma_p_x / p_x) + (sigma_p_y / p_y)
         # print(sigma_p_t)
         return sigma_p_t
 
