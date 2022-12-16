@@ -182,12 +182,12 @@ if __name__ == "__main__":
     print(f"range reconstruction efficiency {reconstruction_eff}")
 
     # print(len(velo_detect.particles))
-    velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 10, ([0, 0], [0, 0], [-10, 10]))
+    velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 4, ([0, 0], [0, 0], [-10, 10]))
     ips = []
     sigma_ips = []
     for par in velo_detect.particles[2:]:
         ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
-        # ax3d.scatter(par.z_0, par.x_0, par.x_0 , color="orange")
+        ax3d.scatter(par.z_0, par.x_0, par.y_0 , color="orange")
         ips.append(par.impact_parameter(*fit_result[0:2], *fit_result[4:6]))
         sigma_ips.append(par.ip_resolution(*fit_result))
     # print(sigma_ips)
