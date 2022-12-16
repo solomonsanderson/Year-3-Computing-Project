@@ -58,12 +58,29 @@ class particle:
 
         # print(self.x_0)
         
-        self.x_mult = self.p_x/self.p_z
-        self.y_mult = self.p_y/self.p_z
+        self.x_mult = self.p_x/self.p_z  # gradient 
+        self.y_mult = self.p_y/self.p_z  # gradient
+        self.z_arr = z_arr 
         
-        self.x_arr = (z_arr * self.x_mult) + self.x_0
-        self.y_arr = (z_arr * self.y_mult) + self.y_0
-        self.z_arr = z_arr + self.z_0
+
+        # self.x_arr = (z_arr * self.x_mult) + self.x_0
+        # self.y_arr = (z_arr * self.y_mult) + self.y_0
+        # shifted_z = z_arr + self.z_0
+
+        self.delta_x_z = (self.x_mult * self.z_0) + self.x_0
+        self.delta_y_z = (self.y_mult * self.z_0) + self.y_0
+        
+        # self.x_arr = (z_arr * self.x_mult)
+        # self.y_arr = (z_arr * self.y_mult)
+        self.x_arr = ((z_arr - self.z_0) * self.x_mult) + self.x_0 #+ self.delta_x_z
+        self.y_arr = ((z_arr - self.z_0) * self.y_mult) + self.y_0 #+ self.delta_y_z
+        # print(self.x_arr[0], self.y_arr[0], z_arr[0])
+        # self.z_0_x = -(self.x_0 + self.delta_x_z)/self.x_mult
+        # self.z_0_y = -(self.y_0 + self.delta_y_z)/self.y_mult
+        # # print(f"z_0 {self.z_0_x, self.z_0_y}")
+        # self.x_0 = self.x_0 + delta_x_z
+        # self.y_0 = self.y_0 + delta_y_z
+        
 
 
     def position(self, z_value):
@@ -100,6 +117,7 @@ class particle:
         new_p = unit_vector * momentum_magnitude
         self.p_arr = np.array(new_p)  # consider removing the individual pxpypz part 
         self.xy_pos(self.z_arr)
+        self.p_x, self.p_x, self.p_z = self.p_arr
 
 
     def transverse_momentum(self, m_x, m_y, p_tot):
@@ -176,7 +194,7 @@ class particle:
         self.x_fitted = m_x * self.z_arr + c_x
         self.y_fitted = m_y * self.z_arr + c_y
         # print(f"x{x_fitted}")
-
+        print(self.z_0)
         x_1, x_2 = self.x_fitted[0], self.x_fitted[1]
         y_1, y_2 = self.y_fitted[0], self.y_fitted[1]
         z_1, z_2 = self.z_arr[0], self.z_arr[1]

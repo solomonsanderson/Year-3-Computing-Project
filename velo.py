@@ -312,7 +312,7 @@ class velo:
             effs - array of floats, the reconstruction efficiencies that each
             set of particles has.
         '''
-        etas = np.linspace(*pr_range, 10)
+        etas = np.linspace(*pr_range, 100)
         effs = []
         for eta in etas:
             # particles = particle_generate(10, eta, z)

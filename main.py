@@ -30,7 +30,7 @@ if __name__ == "__main__":
     z_all = np.concatenate([z_left_sensors, z_right_sensors])
 
     ax3d = plt.figure().add_subplot(projection="3d")
-    plot_sensor_3d(ax3d)
+    # plot_sensor_3d(ax3d)
 
     # Formatting our plot including legend
     ax3d.scatter(0,0,0, color="y", s=15)  # places a point at the origin
@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
 
     zero_etas, zero_effs = velo_detect.recon_eta([-12, 12], ([0, 0], [0, 0], [0, 0]))
-    etas, effs = velo_detect.recon_eta([-12, 12], ([-5, 5], [-5, 5], [0, 0]))
+    etas, effs = velo_detect.recon_eta([-12, 12], ([-5, 5], [-5, 5], [-60, 60]))
 
     
     fig_eff, ax_eff = plt.subplots()
@@ -75,14 +75,16 @@ if __name__ == "__main__":
     sigmas = []
     etas = []
     phis = []
-    uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 10000, ([-5, 5], [-5, 5], [0, 0]))
+    uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 10, ([-5, 5], [-5, 5], [-10, 10]))
     for count, particle_ in enumerate(uniform_particles):
         particle_.set_pmag(10)  # setting the particles total momentum in GeV
         hits = velo_detect.hits(particle_, hit_resolution=5)
         if len(hits) >= 3:
             # ax3d.plot(particle_.z_arr, particle_.x_arr,  particle_.y_arr,  marker=None, alpha=0.5, color="green")
+            # ax3d.plot(particle_.z_arr, particle_.x_arr_translated,  particle_.y_arr_translated,  marker=None, alpha=0.5, color="blue")
             z, x, y = np.array(hits)[:,0].flatten(), np.array(hits)[:,1].flatten(), np.array(hits)[:,2].flatten()
             fit_result  = fit_3d(z, x, y, plot=False)
+            # print(fit_result)
             p_t = particle_.transverse_momentum(*fit_result[0:2], 10)
             sigma_p_t = particle_.p_resolution(*fit_result[0:4])
             true_p_t = (particle_.p_arr[0] ** 2 +  particle_.p_arr[1] ** 2 ) ** 0.5  # calculating the momentum from the initial momentum values.
@@ -173,21 +175,22 @@ if __name__ == "__main__":
     pt_ax[1].set_title("Plot of $P_T$ against $\phi$. With 10000 Points")
 
     # investigating the effect of different starting positions on the reconstruction efficiency.
-    print("range of starts")
+    # print("range of starts")
     # velo_detector = velo(z_left_sensors, z_right_sensors)
     # particles = velo_detector.uniform_particle_generate((0, 2 * np.pi), (4,4), 50, ([0,0],[0,0],[0, 0]))[0]  # Generatess 50 particles with a pseudo rapidity of 4
     reconstruction_eff, reconstruction_hits = velo_detect.recon_eff()
     print(f"range reconstruction efficiency {reconstruction_eff}")
 
     # print(len(velo_detect.particles))
-    velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 100, ([-5, 5], [-5, 5], [0, 0]))
+    velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 10, ([0, 0], [0, 0], [-10, 10]))
     ips = []
     sigma_ips = []
-    for par in velo_detect.particles:
+    for par in velo_detect.particles[2:]:
         ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
+        # ax3d.scatter(par.z_0, par.x_0, par.x_0 , color="orange")
         ips.append(par.impact_parameter(*fit_result[0:2], *fit_result[4:6]))
         sigma_ips.append(par.ip_resolution(*fit_result))
-    print(sigma_ips)
+    # print(sigma_ips)
     print(np.mean(ips), np.mean(sigma_ips))
 
     # fig_zvar, ax_zvar = plt.subplots()
