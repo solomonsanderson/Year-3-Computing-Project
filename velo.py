@@ -233,38 +233,24 @@ class velo:
 
         phi_values = np.random.uniform(*phi_range, size=number)
         eta_values = np.random.uniform(*eta_range, size=number)
-        # print(eta_values)
-
         start_pos_vals = np.repeat([[0, 0, 0]], repeats=number, axis=0)
-
 
         if start_pos_range != (0,0,0):
             x_start = np.random.uniform(start_pos_range[0][0], start_pos_range[0][1], size=number)
             y_start = np.random.uniform(start_pos_range[1][0], start_pos_range[1][1], size=number)
             z_start = np.random.uniform(start_pos_range[2][0], start_pos_range[2][1], size=number)
             start_pos_vals = np.array(np.transpose([x_start, y_start, z_start]))
-            # print(f"starpv{start_pos_vals}")
-        # print(start_pos_vals)
-        
-        # print(f"phis = {phi_values}")
-        # print(f"etas = {eta_values}")
+            
         self.particles = []
-        # print(start_pos_vals)
 
         for count, eta in enumerate(eta_values):
-            # print(start_pos_vals[count])
-            # try enumerate here with x,y,z
-            # need to only give one value for x y z in each iteration
-            # print(f"phi{phi}, eta{eta}")
-            theta = pr_theta(eta_values[count])
-            # print(f"start{start}")
+            theta = pr_theta(eta)
             start = start_pos_vals[count]
             ys = self.zs * np.tan(theta)
             xs = self.zs * ((np.tan(theta))/(np.tan(phi_values[count])))
             part_obj = particle((xs[0] ,ys[0], self.zs[0]), start)
             part_obj.xy_pos(self.zs)
             self.particles.append(part_obj)
-
 
         return self.particles, phi_values, eta_values
 
@@ -285,14 +271,12 @@ class velo:
         reconstructed_hits = []
         for par in self.particles:
             hts = self.hits(par)
-            # if hts != []:
-            #     print(hts)
+
 
             if len(hts) >= 3:
                 reconned += 1
                 reconstructed_hits.append(hts)
 
-            # ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None)
         efficiency = reconned / len(self.particles)
         return efficiency, reconstructed_hits
 
@@ -312,18 +296,17 @@ class velo:
             effs - array of floats, the reconstruction efficiencies that each
             set of particles has.
         '''
+
+
         etas = np.linspace(*pr_range, 100)
         effs = []
         for eta in etas:
-            # particles = particle_generate(10, eta, z)
-            # print(eta)
-            # print(start_pos)
-            particles = self.uniform_particle_generate((0, 2 * np.pi), (eta, eta), 10, start_pos)[0]
+            particles = self.uniform_particle_generate((0, 2 * np.pi), (eta, eta), 100, start_pos)[0]
             eff, recon_hits = self.recon_eff()
             effs.append(eff)
             
-        # print(etas, effs)
         return etas, effs
+
 
 if __name__ == "__main__":
     pass

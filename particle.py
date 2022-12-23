@@ -67,8 +67,8 @@ class particle:
         # self.y_arr = (z_arr * self.y_mult) + self.y_0
         # shifted_z = z_arr + self.z_0
 
-        self.delta_x_z = (self.x_mult * self.z_0) + self.x_0
-        self.delta_y_z = (self.y_mult * self.z_0) + self.y_0
+        # self.delta_x_z = (self.x_mult * self.z_0) + self.x_0
+        # self.delta_y_z = (self.y_mult * self.z_0) + self.y_0
         
         # self.x_arr = (z_arr * self.x_mult)
         # self.y_arr = (z_arr * self.y_mult)
@@ -117,7 +117,7 @@ class particle:
         new_p = unit_vector * momentum_magnitude
         self.p_arr = np.array(new_p)  # consider removing the individual pxpypz part 
         self.xy_pos(self.z_arr)
-        self.p_x, self.p_x, self.p_z = self.p_arr
+        # self.p_x, self.p_x, self.p_z = self.p_arr
 
 
     def transverse_momentum(self, m_x, m_y, p_tot):
@@ -193,8 +193,7 @@ class particle:
         
         self.x_fitted = m_x * self.z_arr + c_x
         self.y_fitted = m_y * self.z_arr + c_y
-        # print(f"x{x_fitted}")
-        print(self.z_0)
+
         x_1, x_2 = self.x_fitted[0], self.x_fitted[1]
         y_1, y_2 = self.y_fitted[0], self.y_fitted[1]
         z_1, z_2 = self.z_arr[0], self.z_arr[1]
@@ -209,7 +208,17 @@ class particle:
     
     def ip_resolution(self, m_x, m_y, m_x_sigma, m_y_sigma, c_x, c_y, c_x_sigma, c_y_sigma ):
         '''
-        
+        Calculates the resolution of the impact parameter.
+
+        Args:
+            m_x - float, the gradient returned by the straight line fit in the 
+            xz plane.
+            m_y - float, the gradient returned by the straight line fit in the 
+            yz plane.
+            m_x_sigma - float, the error on the gradient from the covariance
+            matrix returned by the straight line fit.
+            m_y_sigma - float, the error on the gradient from the covariance
+            matrix
         '''
         sigma_fit_x = self.z_arr * (m_x_sigma / m_x) + c_x_sigma
         sigma_fit_y = self.z_arr * (m_y_sigma / m_y) + c_y_sigma

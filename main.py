@@ -25,23 +25,15 @@ if __name__ == "__main__":
     z_left_sensors = np.array([-277, -252, -227, -202, -132, -62, -37, -12, 13, 38, 63, 88, 
     113, 138, 163, 188, 213, 238, 263, 325, 402, 497, 616, 661, 706, 751])
 
-    
-    velo_detect = velo(z_left_sensors, z_right_sensors)
+    velo_detect = velo(z_left_sensors, z_right_sensors) # creating a velo object
     z_all = np.concatenate([z_left_sensors, z_right_sensors])
 
     ax3d = plt.figure().add_subplot(projection="3d")
-    # plot_sensor_3d(ax3d)
+    plot_sensor_3d(ax3d)
 
-    # Formatting our plot including legend
-    ax3d.scatter(0,0,0, color="y", s=15)  # places a point at the origin
-
-    ax3d.set_xlabel("z")
-    ax3d.set_ylabel("x")
-    ax3d.set_zlabel("y")
-    ax3d.set_zlim(-50, 50)
-    ax3d.set_ylim(-50,50)
-    ax3d.set_xlim(-400, 800)
-
+    # Formatting 3d plot axes
+    ax3d.set_xlabel("z"), ax3d.set_ylabel("x"), ax3d.set_zlabel("y")
+    ax3d.set_zlim(-50, 50), ax3d.set_ylim(-50,50), ax3d.set_xlim(-400, 800)
 
     #  Formatting legend
     legend_elements = [Line2D([0], [0], color="green", lw=4, label="Particle Path"),
@@ -52,45 +44,45 @@ if __name__ == "__main__":
 
     ax3d.legend(handles = legend_elements)
 
-    particles = velo_detect.uniform_particle_generate((0, 2 * np.pi), (4,4), 50)[0]  # Generatess 50 particles with a pseudo rapidity of 4
+    particles = velo_detect.uniform_particle_generate((0, 2 * np.pi), (4,4), 10000)[0]  # Generates 50 particles with a pseudo rapidity of 4
     reconstruction_eff, reconstruction_hits = velo_detect.recon_eff()
     print(f"reconstruction efficiency {reconstruction_eff}")
 
+    # reconstruction efficiency as a function of pseudorapidity
+    zero_etas, zero_effs = velo_detect.recon_eta([-7.5, 7.5], ([0, 0], [0, 0], [0, 0]))  # origin
+    etas, effs = velo_detect.recon_eta([-10, 10], ([-15e-6, 15e-6], [-15e-6, 15e-6], [-60, 60]))  # region
 
-
-    zero_etas, zero_effs = velo_detect.recon_eta([-12, 12], ([0, 0], [0, 0], [0, 0]))
-    etas, effs = velo_detect.recon_eta([-12, 12], ([-5, 5], [-5, 5], [-60, 60]))
-
-    
+    # Plotting reconstruction efficiencies
     fig_eff, ax_eff = plt.subplots()
-    ax_eff.plot(zero_etas, zero_effs, color="blue", alpha = 0.5)
-    ax_eff.plot(etas, effs, color="red", alpha = 0.5)
-    
+    ax_eff.plot(zero_etas, zero_effs
+    , color="blue", alpha = 0.5, label="Origin")
+    ax_eff.plot(etas, effs, color="red", alpha = 0.5, label="Random")
+    ax_eff.legend()
     ax_eff.set_xlabel("Pseudorapdidity, $\eta$")
     ax_eff.set_ylabel("Reconstruction Efficiency")
     ax_eff.set_title("Plot of Track Reconstruction Efficiency vs. Pseudorapidity")
+
+    print("Reconstruction Efficiencies Calculated")
 
     true_p_ts = []
     p_ts = []
     sigmas = []
     etas = []
     phis = []
-    uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 10, ([-5, 5], [-5, 5], [-10, 10]))
+    uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-7.5, 7.5), 10000 , ([-15e-6, 15e-6], [-15e-6, 15e-6], [-63, 63]))
     for count, particle_ in enumerate(uniform_particles):
         particle_.set_pmag(10)  # setting the particles total momentum in GeV
-        hits = velo_detect.hits(particle_, hit_resolution=5)
+        hits = velo_detect.hits(particle_)
         if len(hits) >= 3:
             # ax3d.plot(particle_.z_arr, particle_.x_arr,  particle_.y_arr,  marker=None, alpha=0.5, color="green")
-            # ax3d.plot(particle_.z_arr, particle_.x_arr_translated,  particle_.y_arr_translated,  marker=None, alpha=0.5, color="blue")
             z, x, y = np.array(hits)[:,0].flatten(), np.array(hits)[:,1].flatten(), np.array(hits)[:,2].flatten()
             fit_result  = fit_3d(z, x, y, plot=False)
-            # print(fit_result)
+
             p_t = particle_.transverse_momentum(*fit_result[0:2], 10)
             sigma_p_t = particle_.p_resolution(*fit_result[0:4])
             true_p_t = (particle_.p_arr[0] ** 2 +  particle_.p_arr[1] ** 2 ) ** 0.5  # calculating the momentum from the initial momentum values.
             true_p_ts.append(true_p_t)
-            # print(f"x{particle_.p_x}, y{particle_.p_y}")
-            # print(f"p_t = {p_t}, sigma_p_t = {sigma_p_t}, true p_t = {true_p_t}")
+
             p_ts.append(p_t)
             etas.append(eta_values[count])
             phis.append(phi_values[count])
@@ -100,14 +92,17 @@ if __name__ == "__main__":
     sigmas = np.array(sigmas)
     p_ts = np.array(p_ts)
     hist_fig, hist_ax = plt.subplots(1)
-    # print(sigmas)
-    # print(np.min(sigmas/p_ts), np.max(sigmas/p_ts))
+
     print(f"momentum mean = {np.mean(p_ts)} +/- {np.mean(sigmas)}")
-    hist_ax.hist(sigmas/p_ts,bins = 100 , range = (-0.05, 0.05))
+    hist_ax.hist(sigmas/p_ts, bins = 100 , range=(-1e-5, 1e-5))
+    hist_ax.set_xlabel("Error on $p_T$")
+    hist_ax.set_ylabel("Count")
+    hist_ax.set_title("Histogram of the error on $p_T$.")
+
     pt_fig, pt_ax = plt.subplots(2)
 
-    eta_lo = -6
-    eta_hi = 6
+    eta_lo = np.min(etas)
+    eta_hi = np.max(etas)
     n_bins = 96
 
     width = (eta_hi - eta_lo)/n_bins
@@ -120,26 +115,22 @@ if __name__ == "__main__":
     true_pt_plot = np.zeros(n_bins)
     true_events_per_bin = np.zeros(n_bins, dtype=float)
 
-
     for i, index in enumerate(indices):
         pt_plot[index - 2] += p_ts[i]
         events_per_bin[index - 2] += 1
         true_pt_plot[index - 2] += true_p_ts[i]
         true_events_per_bin[index - 2] += 1
     
-    
+
     pt_ax[0].bar(bin_centres, pt_plot / events_per_bin, width=width, align="center", alpha=0.5, label = "fitted")
     pt_ax[0].bar(bin_centres, true_pt_plot / true_events_per_bin, width=width, align="center", alpha=0.5, label="true")
 
-    pt_ax[0].set_ylabel("$P_T$")
+    pt_ax[0].set_ylabel("$\sigma_{P_T}/$")
     pt_ax[0].set_xlabel("$\eta$")
     pt_ax[0].legend()
     pt_fig.tight_layout()
     pt_ax[0].set_title("Plot of $P_T$ against $\eta$. With 10000 Points")
 
-    
-    
-    
     phi_lo = 0
     phi_hi = 2 * np.pi
     n_bins = 96
@@ -147,8 +138,7 @@ if __name__ == "__main__":
     width = (phi_hi - phi_lo)/n_bins
     bins = [phi_lo + i*width for i in range(n_bins + 1)]
     bin_centres = [(bins[i] + bins[i+1])/2 for i in range(len(bins) -1 )]
-    # print(f"bin cents {bin_centres}")
-    # print(f"bin pos{bin_centres}")
+
 
     indices  = np.digitize(phis, bins) #< 100 indices 1
     pt_plot = np.zeros(n_bins)
@@ -161,40 +151,55 @@ if __name__ == "__main__":
 
 
     pt_ax[1].bar(bin_centres, pt_plot / events_per_bin, width=width, align="center")
-    
 
-    # print(sorted(p_ts))
-    # pt_ax[0].plot(phis, p_ts)
-    # pt_ax[0].hist(p_ts)
     pt_ax[1].set_ylabel("$P_T$")
     pt_ax[1].set_xlabel("$\phi$")
-    # pt_ax[1].plot(etas, p_ts)
-    # pt_ax[1].set_xlabel("$\eta$")
-    # pt_ax[1].set_ylabel("$P_T$")
     pt_fig.tight_layout()
     pt_ax[1].set_title("Plot of $P_T$ against $\phi$. With 10000 Points")
 
+
     # investigating the effect of different starting positions on the reconstruction efficiency.
-    # print("range of starts")
-    # velo_detector = velo(z_left_sensors, z_right_sensors)
-    # particles = velo_detector.uniform_particle_generate((0, 2 * np.pi), (4,4), 50, ([0,0],[0,0],[0, 0]))[0]  # Generatess 50 particles with a pseudo rapidity of 4
     reconstruction_eff, reconstruction_hits = velo_detect.recon_eff()
     print(f"range reconstruction efficiency {reconstruction_eff}")
 
     # print(len(velo_detect.particles))
-    velo_detect.uniform_particle_generate((0, 2  * np.pi), (-6, 6), 4, ([0, 0], [0, 0], [-10, 10]))
+    velo_detect.uniform_particle_generate((0, 2  * np.pi), (-7.5, 7.5), 1000 , ([0, 0], [0, 0], [0, 0]))
     ips = []
     sigma_ips = []
+    
     for par in velo_detect.particles[2:]:
-        ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
-        ax3d.scatter(par.z_0, par.x_0, par.y_0 , color="orange")
+        # ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
+        # ax3d.scatter(par.z_0, par.x_0, par.y_0 , color="orange")
         ips.append(par.impact_parameter(*fit_result[0:2], *fit_result[4:6]))
         sigma_ips.append(par.ip_resolution(*fit_result))
-    # print(sigma_ips)
-    print(np.mean(ips), np.mean(sigma_ips))
 
-    # fig_zvar, ax_zvar = plt.subplots()
-    # ax_zvar.set_xlabel("Pseudorapdidity, $\eta$")
-    # ax_zvar.set_ylabel("Reconstruction Efficiency")
-    # ax_zvar.set_title("Plot of Track Reconstruction Efficiency vs. Pseudorapidity")
+    print(f"IP mean {np.mean(ips)} +/- {np.mean(sigma_ips)}")
+    # print(sigma_ips) # likely incorrect
+    ip_fig, ip_ax = plt.subplots(1)
+
+    ip_lo = np.min(ips)
+    ip_hi = np.max(ips)
+    n_bins = 96
+
+    width = (ip_hi - ip_lo)/n_bins
+    bins = [ip_lo + i*width for i in range(n_bins + 1)]
+    bin_centres = [(bins[i] + bins[i+1])/2 for i in range(len(bins) -1 )]
+
+    indices  = np.digitize(ips, bins) #< 100 indices 1
+    ip_plot = np.zeros(n_bins)
+    events_per_bin = np.zeros(n_bins, dtype=float)
+    true_ip_plot = np.zeros(n_bins)
+    true_events_per_bin = np.zeros(n_bins, dtype=float)
+
+    for i, index in enumerate(indices):
+        ip_plot[index - 2] += ips[i]
+        events_per_bin[index - 2] += 1
+        true_events_per_bin[index - 2] += 1
+    
+
+    # ip_ax.bar(bin_centres, ip_plot / events_per_bin, width=width, align="center", alpha=0.5, label = "fitted", color="green")
+    ip_ax.hist(ips)
+    # pt_ax[0].bar(bin_centres, true_pt_plot / true_events_per_bin, width=width, align="center", alpha=0.5, label="true")
+
+
     plt.show()
