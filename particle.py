@@ -121,6 +121,7 @@ class particle:
 
         m_squared = m_x ** 2 + m_y ** 2  # gradient in xyz
         p_t = p_tot * np.sqrt(m_squared/(m_squared + 1))
+
         return p_t
 
 
@@ -145,12 +146,13 @@ class particle:
         p_x = m_x * self.p_arr[2]  # momentum in xz plane
         p_y = m_y * self.p_arr[2]  # momentum in yz plane
         p_tot = (p_x ** 2 + p_y ** 2 + self.p_arr[2] ** 2) ** 0.5
- 
-        sigma_p_x =  m_y_error * np.abs(self.p_arr[2])  # error on momentum in xz plane
-        sigma_p_y =  m_x_error * np.abs(self.p_arr[2])  # error on momentum in yz plane
+        p_t = np.linalg.norm([p_x, p_y])
 
-        sigma_p_t = 0.5 * ( 2 *((sigma_p_x / p_x) + (sigma_p_y / p_y)))/((p_x ** 2 + p_y ** 2) ** 0.5)  # error on transverse momentum
+        sigma_p_x =  m_x_error * np.abs(self.p_arr[2])  # error on momentum in xz plane
+        sigma_p_y =  m_y_error * np.abs(self.p_arr[2])  # error on momentum in yz plane
 
+        sigma_root = 2 * ((sigma_p_x/p_x) + (sigma_p_y/p_y)) * (p_x**2 + p_y**2)  # error on transverse momentum
+        sigma_p_t = 0.5 * p_t * (sigma_root/(p_x**2 + p_y**2))
         return sigma_p_t
 
 
@@ -223,9 +225,9 @@ class particle:
         b_y = t * (y_1 - y_2) + (y_2 - self.y_0)
         b_z = t * (z_1 - z_2) + (z_2 - self.z_0)
 
-        sigma_t = (sigma_fit_x ** 2 + sigma_fit_y ** 2)/( 2 * ((2 * sigma_fit_x)/(x_1 - x_2) + (2 * sigma_fit_y)/(y_1 - y_2)))
-        sigma_b_x = (sigma_t)/(t) + (2 * sigma_fit_x)/(x_1 - x_2) + sigma_fit_x
-        sigma_b_y = (sigma_t)/(t) + (2 * sigma_fit_y)/(y_1 - y_2) + sigma_fit_y
+        sigma_t =  ((sigma_fit_x/(x_2 - self.x_0)) + (2 * sigma_fit_x/(x_1 - x_2)) + (sigma_fit_y/(y_2 - self.y_0)) + (2 *sigma_fit_y/(y_1 - y_2)) + 2 * (2 * sigma_fit_x/(x_1 - x_2)) + 2*(2 * sigma_fit_y/(y_1 - y_2))) * t
+        sigma_b_x = (sigma_t/t) + (2 * sigma_fit_x)/(x_1 - x_2) + sigma_fit_x
+        sigma_b_y = (sigma_t/t) + (2 * sigma_fit_y)/(y_1 - y_2) + sigma_fit_y
         sigma_xyz = (2 * sigma_b_x)/(b_x) + (2 * sigma_b_y)/(b_y)
         sigma_dist = 0.5  * ((sigma_xyz)/(b_x ** 2 + b_y ** 2 + b_z ** 2))
         return sigma_dist   

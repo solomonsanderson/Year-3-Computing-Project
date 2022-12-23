@@ -95,7 +95,6 @@ def fit_3d(z, x, y, plot = False):
     popt_yz, pcov_yz = curve_fit(line, z, y)
     m_y = popt_yz[0]
     c_y = popt_yz[1]
-    
     yz_errors = np.diag(pcov_yz)
     m_y_sigma = yz_errors[0]
     c_y_sigma = yz_errors[1]

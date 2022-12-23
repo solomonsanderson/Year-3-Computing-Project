@@ -1,4 +1,7 @@
 '''main.py
+
+!RUN THE CODE FROM THIS FILE!
+
 The main file of my project where all of the other files are called from and
 used. 
 
@@ -33,18 +36,17 @@ if __name__ == "__main__":
     velo_detect = velo(z_left_sensors, z_right_sensors) # creating a velo object
     z_all = np.concatenate([z_left_sensors, z_right_sensors])
 
-    # ax3d = plt.figure().add_subplot(projection="3d")  # creating a 3d mpl axis
-    # plot_sensor_3d(ax3d)  # plotting the sensor on the 3d axis.
+    np.seterr(divide="ignore")
 
     # Plot of particles with varied etas
     ax3d_eta = plt.figure().add_subplot(projection="3d")
     plot_sensor_3d(ax3d_eta)
 
-    lo_eta_particles, lo_eta_values, lo_eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (1, 2), 50 , ([-15e-6, 15e-6], [-15e-6, 15e-6], [-63, 63]))
+    lo_eta_particles, lo_eta_values, lo_eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (1, 2), 50 , ([-15e-3, 15e-3], [-15e-3, 15e-3], [-63, 63]))
     for par in lo_eta_particles:
         ax3d_eta.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
 
-    hi_eta_particles, hi_eta_values, hi_eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (5, 6), 50 , ([-15e-6, 15e-6], [-15e-6, 15e-6], [-63, 63]))
+    hi_eta_particles, hi_eta_values, hi_eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (5, 6), 50 , ([-15e-3, 15e-3], [-15e-3, 15e-3], [-63, 63]))
     for par in hi_eta_particles:
         ax3d_eta.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="orange")
 
@@ -60,16 +62,16 @@ if __name__ == "__main__":
                 Patch(facecolor='blue', edgecolor='black',
                          label='Left Sensors')]
 
-    ax3d_eta.legend(eta_legend_elements)
+    ax3d_eta.legend(handles = eta_legend_elements)
 
     # Plot of particles with varied phis
     ax3d_phi = plt.figure().add_subplot(projection="3d")
     plot_sensor_3d(ax3d_phi)
-    lo_phi_particles, lo_phi_values, lo_phi_values = velo_detect.uniform_particle_generate((0, 0.5  * np.pi), (-7.5, 7.5), 50 , ([-15e-6, 15e-6], [-15e-6, 15e-6], [-63, 63]))
+    lo_phi_particles, lo_phi_values, lo_phi_values = velo_detect.uniform_particle_generate((0, 0.5  * np.pi), (-6, 6), 50 , ([-15e-3, 15e-3], [-15e-3, 15e-3], [-63, 63]))
     for par in lo_phi_particles:
         ax3d_phi.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
 
-    hi_phi_particles, hi_phi_values, hi_phi_values = velo_detect.uniform_particle_generate((1.5 * np.pi, 2  * np.pi), (-7.5, 7.5), 50 , ([-15e-6, 15e-6], [-15e-6, 15e-6], [-63, 63]))
+    hi_phi_particles, hi_phi_values, hi_phi_values = velo_detect.uniform_particle_generate((1.5 * np.pi, 2  * np.pi), (-6, 6), 50 , ([-15e-3, 15e-3], [-15e-3, 15e-3], [-63, 63]))
     for par in hi_phi_particles:
         ax3d_phi.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="orange")
 
@@ -85,24 +87,11 @@ if __name__ == "__main__":
                 Patch(facecolor='blue', edgecolor='black',
                          label='Left Sensors')]
 
-    ax3d_eta.legend(phi_legend_elements)
-
-    # # Formatting 3d plot axes
-    # ax3d.set_xlabel("z"), ax3d.set_ylabel("x"), ax3d.set_zlabel("y")
-    # ax3d.set_zlim(-50, 50), ax3d.set_ylim(-50,50), ax3d.set_xlim(-400, 800)
-
-    # #  Formatting legend
-    # legend_elements = [Line2D([0], [0], color="green", lw=4, label="Particle Path"),
-    #             Patch(facecolor='crimson', edgecolor='black',
-    #                        label='Right Sensors'),
-    #             Patch(facecolor='blue', edgecolor='black',
-    #                      label='Left Sensors')]
-
-    # ax3d.legend(handles = legend_elements)
+    ax3d_phi.legend(handles = phi_legend_elements)
 
     # reconstruction efficiency as a function of pseudorapidity
     zero_etas, zero_effs = velo_detect.recon_eta([-7.5, 7.5], ([0, 0], [0, 0], [0, 0]))  # origin
-    etas, effs = velo_detect.recon_eta([-10, 10], ([-15e-6, 15e-6], [-15e-6, 15e-6], [-60, 60]))  # region
+    etas, effs = velo_detect.recon_eta([-7.5, 7.5], ([-15e-3, 15e-3], [-15e-3, 15e-3], [-60, 60]))  # region
 
     # Plotting reconstruction efficiencies
     fig_eff, ax_eff = plt.subplots()
@@ -122,12 +111,11 @@ if __name__ == "__main__":
     sigmas = []
     etas = []
     phis = []
-    uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-7.5, 7.5), 10000 , ([-15e-6, 15e-6], [-15e-6, 15e-6], [-63, 63]))
+    uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-7.5, 7.5), 10000 , ([-15e-3, 15e-3], [-15e-3, 15e-3], [-63, 63]))
     for count, particle_ in enumerate(uniform_particles):
         particle_.set_pmag(10)  # setting the particles total momentum in GeV
         hits = velo_detect.hits(particle_)  # getting coordinates of particle hits
         if len(hits) >= 3:
-            # ax3d.plot(particle_.z_arr, particle_.x_arr,  particle_.y_arr,  marker=None, alpha=0.5, color="green")  # uncomment to plot
             z, x, y = np.array(hits)[:,0].flatten(), np.array(hits)[:,1].flatten(), np.array(hits)[:,2].flatten()
             fit_result  = fit_3d(z, x, y, plot=False)  # fitting a straight line to the hits
 
@@ -179,17 +167,25 @@ if __name__ == "__main__":
         true_events_per_bin[index - 2] += 1
     
     
-    pt_ax[0].bar(bin_centres, pt_plot / events_per_bin, width=width, align="center", alpha=0.5, label = "fitted")  # fitted p_t
-    pt_ax[0].bar(bin_centres, true_pt_plot / true_events_per_bin, width=width, align="center", alpha=0.5, label="true")  # generated p_t
+    pt_ax[0].bar(bin_centres, pt_plot / events_per_bin, width=width, align="center", alpha=0.5, label = "fitted", color="red")  # fitted p_t
+    pt_ax[0].bar(bin_centres, true_pt_plot / true_events_per_bin, width=width, align="center", alpha=0.5, label="true", color="blue")  # generated p_t
 
     # formatting plot
-    pt_ax[0].set_ylabel("$\sigma_{P_T}/$")
+    pt_ax[0].set_ylabel("$\sigma_{p_T}/p_T$")
     pt_ax[0].set_xlabel("$\eta$")
     pt_ax[0].legend()
     pt_fig.tight_layout()
-    pt_ax[0].set_title("Plot of $P_T$ against $\eta$. With 10000 Points")
+    pt_ax[0].set_title("Difference between Fitted and True $p_T$")
+    
+     # plotting the difference between fitted p_t and true p_t
+    pt_ax[1].bar(bin_centres,((pt_plot/events_per_bin) - (true_pt_plot/true_events_per_bin)), width=width ,color="green")
+    pt_ax[1].set_ylabel("$\Delta p_T$")
+    pt_ax[1].set_xlabel("$\eta$")
+    pt_fig.tight_layout()
+    pt_ax[1].set_title("Difference between Fitted and True $p_T$.")
 
-    # plotting phi against p_t
+    # Plotting 
+    pt_phi_fig, pt_phi_ax = plt.subplots()
     phi_lo = 0
     phi_hi = 2 * np.pi
     n_bins = 96
@@ -209,12 +205,13 @@ if __name__ == "__main__":
         events_per_bin[index - 2] += 1
 
     
-    pt_ax[1].bar(bin_centres, pt_plot / events_per_bin, width=width, align="center")
+    pt_phi_ax.bar(bin_centres, pt_plot / events_per_bin, width=width, align="center")
 
-    pt_ax[1].set_ylabel("$P_T$")
-    pt_ax[1].set_xlabel("$\phi$")
-    pt_fig.tight_layout()
-    pt_ax[1].set_title("Plot of $P_T$ against $\phi$. With 10000 Points")
+    pt_phi_ax.set_ylabel("$P_T$")
+    pt_phi_ax.set_xlabel("$\phi$")
+    pt_phi_fig.tight_layout()
+    pt_phi_ax.set_title("Plot of $P_T$ against $\phi$. With 10000 Points")
+   
 
 
     # investigating the effect of different starting positions on the reconstruction efficiency.
@@ -227,8 +224,6 @@ if __name__ == "__main__":
     sigma_ips = []
     
     for par in velo_detect.particles[2:]:
-        # ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
-        # ax3d.scatter(par.z_0, par.x_0, par.y_0 , color="orange")
         hits = velo_detect.hits(par)
         if len(hits)>=3:
             z, x, y = np.array(hits)[:,0].flatten(), np.array(hits)[:,1].flatten(), np.array(hits)[:,2].flatten()
@@ -236,34 +231,7 @@ if __name__ == "__main__":
             ips.append(par.impact_parameter(*fit_result[0:2], *fit_result[4:6]))
             sigma_ips.append(par.ip_resolution(*fit_result))
 
-    # print(ips)
-    # print(sigma_ips)
+
     print(f"IP mean {np.mean(ips)} +/- {np.mean(sigma_ips)}")
-    # print(sigma_ips) # likely incorrect
-    ip_fig, ip_ax = plt.subplots(1)
-
-    ip_lo = np.min(ips)
-    ip_hi = np.max(ips)
-    n_bins = 96
-
-    width = (ip_hi - ip_lo)/n_bins
-    bins = [ip_lo + i*width for i in range(n_bins + 1)]
-    bin_centres = [(bins[i] + bins[i+1])/2 for i in range(len(bins) -1 )]
-    indices  = np.digitize(ips, bins) #< 100 indices 1
-    ip_plot = np.zeros(n_bins)
-    events_per_bin = np.zeros(n_bins, dtype=float)
-    true_ip_plot = np.zeros(n_bins)
-    true_events_per_bin = np.zeros(n_bins, dtype=float)
-
-    for i, index in enumerate(indices):
-        ip_plot[index - 2] += ips[i]
-        events_per_bin[index - 2] += 1
-        true_events_per_bin[index - 2] += 1
-
-    ip_ax.bar(bin_centres, ip_plot / events_per_bin, width=width, align="center", alpha=0.5, label = "fitted", color="green")
-    ip_ax.set_title("Impact Parameter")
-    # ip_ax.hist(ips)
-    # pt_ax[0].bar(bin_centres, true_pt_plot / true_events_per_bin, width=width, align="center", alpha=0.5, label="true")
-
 
     plt.show()
