@@ -33,21 +33,72 @@ if __name__ == "__main__":
     velo_detect = velo(z_left_sensors, z_right_sensors) # creating a velo object
     z_all = np.concatenate([z_left_sensors, z_right_sensors])
 
-    ax3d = plt.figure().add_subplot(projection="3d")  # creating a 3d mpl axis
-    plot_sensor_3d(ax3d)  # plotting the sensor on the 3d axis.
+    # ax3d = plt.figure().add_subplot(projection="3d")  # creating a 3d mpl axis
+    # plot_sensor_3d(ax3d)  # plotting the sensor on the 3d axis.
 
-    # Formatting 3d plot axes
-    ax3d.set_xlabel("z"), ax3d.set_ylabel("x"), ax3d.set_zlabel("y")
-    ax3d.set_zlim(-50, 50), ax3d.set_ylim(-50,50), ax3d.set_xlim(-400, 800)
+    # Plot of particles with varied etas
+    ax3d_eta = plt.figure().add_subplot(projection="3d")
+    plot_sensor_3d(ax3d_eta)
 
-    #  Formatting legend
-    legend_elements = [Line2D([0], [0], color="green", lw=4, label="Particle Path"),
+    lo_eta_particles, lo_eta_values, lo_eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (1, 2), 50 , ([-15e-6, 15e-6], [-15e-6, 15e-6], [-63, 63]))
+    for par in lo_eta_particles:
+        ax3d_eta.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
+
+    hi_eta_particles, hi_eta_values, hi_eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (5, 6), 50 , ([-15e-6, 15e-6], [-15e-6, 15e-6], [-63, 63]))
+    for par in hi_eta_particles:
+        ax3d_eta.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="orange")
+
+
+    ax3d_eta.set_title("Plot of particle tracks at high and low $\eta$.")
+    ax3d_eta.set_xlabel("z"), ax3d_eta.set_ylabel("x"), ax3d_eta.set_zlabel("y")
+    ax3d_eta.set_zlim(-50, 50), ax3d_eta.set_ylim(-50,50), ax3d_eta.set_xlim(-400, 800)
+
+    eta_legend_elements = [Line2D([0], [0], color="green", lw=4, label="$1\\leq \\eta \\leq 2$"), 
+                Line2D([0], [0], color="orange", lw=4, label="$5\\leq \\eta \\leq 6$"),
                 Patch(facecolor='crimson', edgecolor='black',
                            label='Right Sensors'),
                 Patch(facecolor='blue', edgecolor='black',
                          label='Left Sensors')]
 
-    ax3d.legend(handles = legend_elements)
+    ax3d_eta.legend(eta_legend_elements)
+
+    # Plot of particles with varied phis
+    ax3d_phi = plt.figure().add_subplot(projection="3d")
+    plot_sensor_3d(ax3d_phi)
+    lo_phi_particles, lo_phi_values, lo_phi_values = velo_detect.uniform_particle_generate((0, 0.5  * np.pi), (-7.5, 7.5), 50 , ([-15e-6, 15e-6], [-15e-6, 15e-6], [-63, 63]))
+    for par in lo_phi_particles:
+        ax3d_phi.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
+
+    hi_phi_particles, hi_phi_values, hi_phi_values = velo_detect.uniform_particle_generate((1.5 * np.pi, 2  * np.pi), (-7.5, 7.5), 50 , ([-15e-6, 15e-6], [-15e-6, 15e-6], [-63, 63]))
+    for par in hi_phi_particles:
+        ax3d_phi.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="orange")
+
+
+    ax3d_phi.set_title("Plot of particle tracks at varied $\phi$ values.")
+    ax3d_phi.set_xlabel("z"), ax3d_phi.set_ylabel("x"), ax3d_phi.set_zlabel("y")
+    ax3d_phi.set_zlim(-50, 50), ax3d_phi.set_ylim(-50,50), ax3d_phi.set_xlim(-400, 800)
+
+    phi_legend_elements = [Line2D([0], [0], color="green", lw=4, label="$0\\leq \\phi \\leq \\frac{1}{2}\\pi$"), 
+                Line2D([0], [0], color="orange", lw=4, label="$\\frac{3}{2} \\pi \\leq \\phi \\leq 2 \\pi$"),
+                Patch(facecolor='crimson', edgecolor='black',
+                           label='Right Sensors'),
+                Patch(facecolor='blue', edgecolor='black',
+                         label='Left Sensors')]
+
+    ax3d_eta.legend(phi_legend_elements)
+
+    # # Formatting 3d plot axes
+    # ax3d.set_xlabel("z"), ax3d.set_ylabel("x"), ax3d.set_zlabel("y")
+    # ax3d.set_zlim(-50, 50), ax3d.set_ylim(-50,50), ax3d.set_xlim(-400, 800)
+
+    # #  Formatting legend
+    # legend_elements = [Line2D([0], [0], color="green", lw=4, label="Particle Path"),
+    #             Patch(facecolor='crimson', edgecolor='black',
+    #                        label='Right Sensors'),
+    #             Patch(facecolor='blue', edgecolor='black',
+    #                      label='Left Sensors')]
+
+    # ax3d.legend(handles = legend_elements)
 
     # reconstruction efficiency as a function of pseudorapidity
     zero_etas, zero_effs = velo_detect.recon_eta([-7.5, 7.5], ([0, 0], [0, 0], [0, 0]))  # origin
