@@ -32,16 +32,17 @@ def cuboid_data2(o, size=(1,1,1)):
         cuboid.
 
     '''
+    # 3d array/ ,atric representing the corners of the cube
     X = [[[0, 1, 0], [0, 0, 0], [1, 0, 0], [1, 1, 0]],
          [[0, 0, 0], [0, 0, 1], [1, 0, 1], [1, 0, 0]],
          [[1, 0, 1], [1, 0, 0], [1, 1, 0], [1, 1, 1]],
          [[0, 0, 1], [0, 0, 0], [0, 1, 0], [0, 1, 1]],
          [[0, 1, 0], [0, 1, 1], [1, 1, 1], [1, 1, 0]],
          [[0, 1, 1], [0, 0, 1], [1, 0, 1], [1, 1, 1]]]
-    X = np.array(X).astype(float)
+    X = np.array(X).astype(float)  # changing vakues to floats
     for i in range(3):
         X[:,:,i] *= size[i]
-    X += np.array(o)
+    X += np.array(o)  # Adding position to X
     return X
 
 
@@ -54,29 +55,18 @@ def plotCubeAt2(positions,sizes=None,colors=None, **kwargs):
         positions - 3d array, the position at which to create the cuboid.
         sizes - 3d array, the sizes of the cuboids that will be generated.
         colors - array of strings, the colours of each of the cuboid objects
+    
+    Returns:
+        Poly3DCollection - Collection of matplotlib 3D objects.
     '''
-    if not isinstance(colors,(list,np.ndarray)): colors=["C0"]*len(positions)  # is instance checks colors is a tuple of a list and an array.
+    if not isinstance(colors,(list,np.ndarray)): colors=["C0"]*len(positions)  # checks colors is a tuple of a list and an array.
     if not isinstance(sizes,(list,np.ndarray)): sizes=[(1,1,1)]*len(positions)  # as above for sizes.
     g = []
-    for p,s,c in zip(positions,sizes,colors):
-        g.append( cuboid_data2(p, size=s))
+    for p,s,c in zip(positions,sizes,colors):  # loops over positions, sizes and colours
+        g.append( cuboid_data2(p, size=s)) 
     return Poly3DCollection(np.concatenate(g),  
                             facecolors=np.repeat(colors,6), **kwargs)
 
                             
 if __name__ == "__main__":   
-    positions = [(-3,5,-2),(1,7,1)]
-    sizes = [(4,5,3), (3,3,7)] # x, y, z
-    colors = ["crimson","limegreen"]
-    
-    
-    ax = plt.figure().add_subplot(projection="3d")
-    
-    pc = plotCubeAt2(positions,sizes,colors=colors, edgecolor="k")
-    ax.add_collection3d(pc)    
-    
-    ax.set_xlim([-4,6])
-    ax.set_ylim([4,13])
-    ax.set_zlim([-3,9])
-    
-    plt.show()
+    pass

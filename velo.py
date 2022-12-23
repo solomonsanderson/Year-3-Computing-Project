@@ -76,25 +76,26 @@ def fit_3d(z, x, y, plot = False):
         matrix.
     '''
 
-
+    # Fitting the xz plane
     popt_xz, pcov_xz = curve_fit(line, np.array(z), np.array(x))
     m_x = popt_xz[0]
     c_x = popt_xz[1]
-    xz_errors = np.diag(pcov_xz)
+    xz_errors = np.diag(pcov_xz)  # getting errors from covariance matrix
     m_x_sigma = xz_errors[0]
     c_x_sigma = xz_errors[1]
     # theta_x = np.arctan(popt_xz[0])
 
+    # Fitting the xy plane
     popt_yz, pcov_yz = curve_fit(line, z, y)
     m_y = popt_yz[0]
     c_y = popt_yz[1]
-    # theta_y = np.arctan(popt_yz[0])
+    
     yz_errors = np.diag(pcov_yz)
     m_y_sigma = yz_errors[0]
     c_y_sigma = yz_errors[1]
+    # theta_y = np.arctan(popt_yz[0])
 
-
-    if plot:
+    if plot:   # plots each straight line fit
         fig, axs = plt.subplots(2)
         axs[0].plot(z, line(z, *popt_xz), "r--", alpha=0.5, 
             label = f"straight line fit \nm = {popt_xz[0]:.2} $\pm$ {xz_errors[0]:.2}\nc = {popt_xz[1]:.2} $\pm$ {xz_errors[1]:.2}")
@@ -154,11 +155,12 @@ class velo:
         self.right_sensor_z = right_sensor_z
         self.zs = np.concatenate([left_sensor_z, right_sensor_z])
 
-
+        # creating left sensors at given zs
         for z in self.left_sensor_z:
             l_sensor = left_sensor(z)
             self.l_sensors.append(l_sensor)
 
+        # creating right sensors at given zs
         for z in self.right_sensor_z:
             r_sensor = right_sensor(z)
             self.r_sensors.append(r_sensor)
@@ -182,23 +184,20 @@ class velo:
 
         for i in range(len(self.left_sensor_z)):
             l_x, l_y, l_z = particle.position(self.left_sensor_z[i])
-            l_x_smear = np.random.normal(l_x, hit_resolution)
-            l_y_smear = np.random.normal(l_y, hit_resolution)
+            l_x_smear = np.random.normal(l_x, hit_resolution)  # generating values to smear left x by
+            l_y_smear = np.random.normal(l_y, hit_resolution)  # generating values to smear left y by
+            l_hits = self.l_sensors[i].in_sensor(l_x, l_y)  # checking if smeared value is in sensor
 
-            # If we dont use the smeared values for l_hits there is no risk of
-            # us losing or gaining values through smearing them out of the sensor
-            l_hits = self.l_sensors[i].in_sensor(l_x, l_y)
-
-
+            # determining if hit
             if (l_hits[0].size > 0 ) & (l_hits[1].size > 0) & (random.choices([True, False], weights = (hit_efficiency, 100 - hit_efficiency))[0]):
                 hits.append((l_z, l_x_smear, l_y_smear))
             
 
         for i in range(len(self.right_sensor_z)):
             r_x, r_y, r_z = particle.position(self.right_sensor_z[i])
-            r_x_smear = np.random.normal(r_x, hit_resolution)
-            r_y_smear = np.random.normal(r_y, hit_resolution)
-            r_hits = self.r_sensors[i].in_sensor(r_x, r_y)
+            r_x_smear = np.random.normal(r_x, hit_resolution)  # generating values to smear right x by
+            r_y_smear = np.random.normal(r_y, hit_resolution)  # generating values to smear right y by 
+            r_hits = self.r_sensors[i].in_sensor(r_x, r_y)  # checking if smeared value is in sensor
 
 
             if (r_hits[0].size > 0) & (random.choices([True, False], weights = (hit_efficiency, 100 - hit_efficiency))[0]):
@@ -233,22 +232,22 @@ class velo:
 
         phi_values = np.random.uniform(*phi_range, size=number)
         eta_values = np.random.uniform(*eta_range, size=number)
-        start_pos_vals = np.repeat([[0, 0, 0]], repeats=number, axis=0)
+        start_pos_vals = np.repeat([[0, 0, 0]], repeats=number, axis=0)  # creating a 2d array of start pos
 
-        if start_pos_range != (0,0,0):
+        if start_pos_range != (0,0,0):  # generates random start pos values
             x_start = np.random.uniform(start_pos_range[0][0], start_pos_range[0][1], size=number)
             y_start = np.random.uniform(start_pos_range[1][0], start_pos_range[1][1], size=number)
             z_start = np.random.uniform(start_pos_range[2][0], start_pos_range[2][1], size=number)
-            start_pos_vals = np.array(np.transpose([x_start, y_start, z_start]))
+            start_pos_vals = np.array(np.transpose([x_start, y_start, z_start]))  # transposing our vector for ease
             
         self.particles = []
 
         for count, eta in enumerate(eta_values):
-            theta = pr_theta(eta)
+            theta = pr_theta(eta)  # converts pseudorapidity to angle to beam
             start = start_pos_vals[count]
-            ys = self.zs * np.tan(theta)
+            ys = self.zs * np.tan(theta) 
             xs = self.zs * ((np.tan(theta))/(np.tan(phi_values[count])))
-            part_obj = particle((xs[0] ,ys[0], self.zs[0]), start)
+            part_obj = particle((xs[0] ,ys[0], self.zs[0]), start)  # create a particle with given values
             part_obj.xy_pos(self.zs)
             self.particles.append(part_obj)
 
@@ -272,7 +271,7 @@ class velo:
         for par in self.particles:
             hts = self.hits(par)
 
-
+            # checking if a particle is reconstructed
             if len(hts) >= 3:
                 reconned += 1
                 reconstructed_hits.append(hts)
@@ -298,10 +297,10 @@ class velo:
         '''
 
 
-        etas = np.linspace(*pr_range, 100)
+        etas = np.linspace(*pr_range, 100)  # generating uniformly spaced etas
         effs = []
         for eta in etas:
-            particles = self.uniform_particle_generate((0, 2 * np.pi), (eta, eta), 100, start_pos)[0]
+            particles = self.uniform_particle_generate((0, 2 * np.pi), (eta, eta), 100, start_pos)[0]  # generating particles
             eff, recon_hits = self.recon_eff()
             effs.append(eff)
             

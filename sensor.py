@@ -88,66 +88,36 @@ def plot_sensor_3d(axis):
 
 
     # Right Sensors
-    positions = [(0, -5.1, -33.26), (0, 5.1, -5.1)]
     positions_arr = []
-    
+    # making an array of positions for right sensors.
     for i in z_right_sensors:
-        # print(f"right {i}")
         positions_arr.append((i, -5.1, -33.26))
         positions_arr.append((i, 5.1, -5.1))
 
-        
-    
-    sizes = [(0.2, 42.51, 28.41), (0.2, 28.16, 38.61)]
+    sizes = [(0.2, 42.51, 28.41), (0.2, 28.16, 38.61)]  # settings sizes of sensors
     sizes_arr = sizes * len(z_right_sensors)
-
-    ones = np.ones(len(z_right_sensors))
-    colors_arr = [("crimson")] * len(z_right_sensors) * 2
-
-    # print(colors_arr)
-    # print(sizes_arr)
-    # print(positions_arr)
+    colors_arr = [("crimson")] * len(z_right_sensors) * 2  # making an array of colors for each rectangle
 
     pc = plotCubeAt2(positions_arr, sizes_arr, colors=colors_arr, edgecolor="k")
     axis.add_collection3d(pc)    
 
 
     # Left Sensors
-    positions = [(0, -33.06, -33.26),(0, -37.41, 5.1)]  # z, x, y
-    # sizes = [(0.2, 28.16, 38.61), (0.2, 42.51, 28.41)]  # z, x, y
-    # colors = [("blue"), ("blue")]
-
     positions_arr = []
+
+    # making an array of positions for left sensors.
     for i in z_left_sensors:
-        # print(f"left {i}")
         positions_arr.append((i, -33.06, -33.26))
         positions_arr.append((i, -37.41, 5.1))
-
-    
+  
     sizes = [(0.2, 28.16, 38.61), (0.2, 42.51, 28.41)]
     sizes_arr = sizes * len(z_left_sensors)
+    colors_arr = [("blue")] * len(z_right_sensors) * 2  # making an array of colors for each rectangle
 
-    ones = np.ones(len(z_left_sensors))
-    colors_arr = [("blue")] * len(z_right_sensors) * 2
-    
-    # print(len(positions_arr))
-    # print(len(sizes_arr))    
-    # print(len(colors_arr))
-
-
-    pc = plotCubeAt2(positions_arr, sizes_arr, colors=colors_arr, edgecolor="k")
-    axis.add_collection3d(pc)    
-
-    # print(z_right_sensors)
-    # print(part.z_arr)
-    # ax3d.plot(part.z_arr, part.x_arr,  part.y_arr,  marker="o", color="green")
-    axis.scatter(0,0,0, color="y", s=15)
-    # print(hits)
-    # for hit in hits:
-    #     # print(hit)
-    #     ax3d.scatter(hit[0], hit[1], hit[2], color="hotpink")
-
-    # ax3d.scatter(0, -5.1, -5.1)
+    pc = plotCubeAt2(positions_arr, sizes_arr, colors=colors_arr, edgecolor="k")  # creating cuboids
+    axis.add_collection3d(pc)  # adding objects to the axis.
+    axis.scatter(0,0,0, color="black", s=15)  # sets point at the origin
+    # Formatting plot
     axis.set_xlabel("z")
     axis.set_ylabel("x")
     axis.set_zlabel("y")
@@ -186,9 +156,8 @@ class right_sensor():
             '''
 
 
-        index = np.where((((5.1 < x) & (x < 33.26)) & ((-5.1 < y) & (y < 33.51))) | (((-5.1 < x) & (x < 37.41)) & ((-33.51 < y) & (y < -5.1))))
-        hits_y, hits_x = y[index], x[index]
-
+        index = np.where((((5.1 < x) & (x < 33.26)) & ((-5.1 < y) & (y < 33.51))) | (((-5.1 < x) & (x < 37.41)) & ((-33.51 < y) & (y < -5.1))))  # get the indicies where the particle is inside the sensor.
+        hits_y, hits_x = y[index], x[index] # return x and y values when the particle is inside
         return hits_y, hits_x
 
 
@@ -225,42 +194,11 @@ class left_sensor():
             '''
         
 
-        index = np.where((((-33.26 < x) & (x < -5.1)) & ((-33.51 < y) & (y < 5.1))) | (((-37.41 < x) & (x < 5.1)) & ((5.1 < y) & (y < 33.51))))
-        hits_y, hits_x = y[index], x[index]
+        index = np.where((((-33.26 < x) & (x < -5.1)) & ((-33.51 < y) & (y < 5.1))) | (((-37.41 < x) & (x < 5.1)) & ((5.1 < y) & (y < 33.51))))  # get the indicies where the particle is inside the sensor.
+        hits_y, hits_x = y[index], x[index]  # return x and y values when the particle is inside
         
         return hits_y, hits_x
         
 
 if __name__ == "__main__":
-    print(right_sensor(-272).in_sensor(20, 67))  # should produce outside
-    print(right_sensor(-272).in_sensor(-7, -20))  # should produce inside
-    print(left_sensor(-272).in_sensor(-7, -20))
-    # fig, ax = plt.subplots(1)
-    # plot_sensor(-5, -20, ax)
-
-
-    # ax3d = plt.figure().add_subplot(projection="3d")
-    # ax3d.plot_surface(np.array([-33.26, -5.1]), np.array([-33.51, 5.1]), np.array([-272.0, -252]))
-    # Create axis
-
-    # # # x, y, z = np.indices((35, 40, 200))
-    # # print(x,y,z)
-    # r_x = [-5.1, 37.41]
-    # r_y = [-33.26, -5.1]
-    # r_z = [-0.25, 0.25]
-    # y = np.arange(-35, 35)
-    # x = np.arange(-40, 40)
-    # # z = np.arange(np.min(z_left_sensors), np.max(z_right_sensors))
-    # z = np.arange(-200, 200)
-
-    # print(combinations(np.array(list(product(r_x, r_y, r_z))), 2))
-
-    # for s, e in combinations(np.array(list(product(r_x, r_y, r_z))), 2):
-    #     if np.sum(np.abs(s-e)) == r_x[1]-r_x[0]:
-    #         ax3d.plot3D(*zip(s, e), color="green")
-    #     elif np.sum(np.abs(s-e)) == r_y[1]-r_y[0]:
-    #         ax3d.plot3D(*zip(s, e), color="green")
-    #     elif np.sum(np.abs(s-e)) == r_z[1]-r_z[0]:
-    #         ax3d.plot3D(*zip(s, e), color="green")
-
-    # plt.show()
+    pass

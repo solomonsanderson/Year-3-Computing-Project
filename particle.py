@@ -39,7 +39,7 @@ class particle:
             None
         '''
 
-        # (start)
+
         self.p_arr = np.array(momentum)
         self.p_x, self.p_y, self.p_z = momentum
         self.x_0, self.y_0, self.z_0 = start
@@ -56,30 +56,14 @@ class particle:
         Returns:
             None.'''
 
-        # print(self.x_0)
         
         self.x_mult = self.p_x/self.p_z  # gradient 
         self.y_mult = self.p_y/self.p_z  # gradient
         self.z_arr = z_arr 
         
+        self.x_arr = ((z_arr - self.z_0) * self.x_mult) + self.x_0 # calculates x vals as fn of z
+        self.y_arr = ((z_arr - self.z_0) * self.y_mult) + self.y_0 # calculates y vals as fn of z
 
-        # self.x_arr = (z_arr * self.x_mult) + self.x_0
-        # self.y_arr = (z_arr * self.y_mult) + self.y_0
-        # shifted_z = z_arr + self.z_0
-
-        # self.delta_x_z = (self.x_mult * self.z_0) + self.x_0
-        # self.delta_y_z = (self.y_mult * self.z_0) + self.y_0
-        
-        # self.x_arr = (z_arr * self.x_mult)
-        # self.y_arr = (z_arr * self.y_mult)
-        self.x_arr = ((z_arr - self.z_0) * self.x_mult) + self.x_0 #+ self.delta_x_z
-        self.y_arr = ((z_arr - self.z_0) * self.y_mult) + self.y_0 #+ self.delta_y_z
-        # print(self.x_arr[0], self.y_arr[0], z_arr[0])
-        # self.z_0_x = -(self.x_0 + self.delta_x_z)/self.x_mult
-        # self.z_0_y = -(self.y_0 + self.delta_y_z)/self.y_mult
-        # # print(f"z_0 {self.z_0_x, self.z_0_y}")
-        # self.x_0 = self.x_0 + delta_x_z
-        # self.y_0 = self.y_0 + delta_y_z
         
 
 
@@ -96,8 +80,8 @@ class particle:
             z position.'''
 
 
-        index = np.where(z_value == self.z_arr)
-        return self.x_arr[index], self.y_arr[index], self.z_arr[index] 
+        index = np.where(z_value == self.z_arr)  # finds the index where z vals match
+        return self.x_arr[index], self.y_arr[index], self.z_arr[index]  # returns x,y and z values at the index
 
         
     def set_pmag(self, momentum_magnitude):
@@ -112,12 +96,11 @@ class particle:
         '''
 
 
-        current_pmag = np.linalg.norm(self.p_arr)
-        unit_vector = (1 / current_pmag) * self.p_arr
-        new_p = unit_vector * momentum_magnitude
-        self.p_arr = np.array(new_p)  # consider removing the individual pxpypz part 
-        self.xy_pos(self.z_arr)
-        # self.p_x, self.p_x, self.p_z = self.p_arr
+        current_pmag = np.linalg.norm(self.p_arr)  # calculating magnitude of p
+        unit_vector = (1 / current_pmag) * self.p_arr  # calculating unit vector of the momentum vector
+        new_p = unit_vector * momentum_magnitude  # vector with given magnitude in GeV
+        self.p_arr = np.array(new_p)
+        self.xy_pos(self.z_arr)  # recalculating the x and y positions at the z values given 
 
 
     def transverse_momentum(self, m_x, m_y, p_tot):
@@ -136,7 +119,7 @@ class particle:
         '''
 
 
-        m_squared = m_x ** 2 + m_y ** 2
+        m_squared = m_x ** 2 + m_y ** 2  # gradient in xyz
         p_t = p_tot * np.sqrt(m_squared/(m_squared + 1))
         return p_t
 
@@ -158,23 +141,16 @@ class particle:
             particle.
         '''
 
-        # print(m_x, m_y, m_x_eror, m_y_error)
-        # sigma_p_t = (2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))/(1 + 2 * np.sqrt((m_x_error / m_x) ** 2 + (m_y_error / m_y) ** 2))
-        p_x = m_x * self.p_arr[2]
-        p_y = m_y * self.p_arr[2]
-        # print(self.p_arr)
+        
+        p_x = m_x * self.p_arr[2]  # momentum in xz plane
+        p_y = m_y * self.p_arr[2]  # momentum in yz plane
         p_tot = (p_x ** 2 + p_y ** 2 + self.p_arr[2] ** 2) ** 0.5
+ 
+        sigma_p_x =  m_y_error * np.abs(self.p_arr[2])  # error on momentum in xz plane
+        sigma_p_y =  m_x_error * np.abs(self.p_arr[2])  # error on momentum in yz plane
 
+        sigma_p_t = 0.5 * ( 2 *((sigma_p_x / p_x) + (sigma_p_y / p_y)))/((p_x ** 2 + p_y ** 2) ** 0.5)  # error on transverse momentum
 
-        # print(self.p_arr[0])
-        # print(f"p_x{p_x}")
-        # print(f"p_y{p_y}, p_tot{p_tot}")
-        sigma_p_x =  m_y_error * np.abs(self.p_arr[2])
-        sigma_p_y =  m_x_error * np.abs(self.p_arr[2])
-        # print(f"self.p_arr[2] {self.p_arr[2]}")
-
-        sigma_p_t = 0.5 * ( 2 *((sigma_p_x / p_x) + (sigma_p_y / p_y)))/((p_x ** 2 + p_y ** 2) ** 0.5)
-        # print(sigma_p_t)
         return sigma_p_t
 
 
@@ -184,16 +160,21 @@ class particle:
         true origin) of our particle.
         
         Args:
-            None.
-        
+            m_x - float, the gradient of the fit in the xz plane.
+            m_y - float, the gradient of the fit in the yz plane.
+            c_x - float, intercept of the line on the x axis.
+            c_y - float, intercept of the line on the y axis.
+         
         Returns:
             dist - float, the shortest distance between the particles true origin and
             the particle track.
             '''
         
-        self.x_fitted = m_x * self.z_arr + c_x
+        # calculating x and y values usng fit parameters
+        self.x_fitted = m_x * self.z_arr + c_x  
         self.y_fitted = m_y * self.z_arr + c_y
 
+        # get 2 points from each set of values 
         x_1, x_2 = self.x_fitted[0], self.x_fitted[1]
         y_1, y_2 = self.y_fitted[0], self.y_fitted[1]
         z_1, z_2 = self.z_arr[0], self.z_arr[1]
@@ -202,7 +183,8 @@ class particle:
         b_x = t * (x_1 - x_2) + (x_2 - self.x_0)
         b_y = t * (y_1 - y_2) + (y_2 - self.y_0)
         b_z = t * (z_1 - z_2) + (z_2 - self.z_0)
-        dist = np.linalg.norm([b_x, b_y, b_z])
+
+        dist = np.linalg.norm([b_x, b_y, b_z])  # find magnitude of b vals
         return dist
 
     
@@ -219,7 +201,17 @@ class particle:
             matrix returned by the straight line fit.
             m_y_sigma - float, the error on the gradient from the covariance
             matrix
+            c_x - float, intercept of the line on the x axis.
+            c_y - float, intercept of the line on the y axis. (both c_x and c_y
+            are unused but are args to make passing from fit_3d easier). 
+            c_x_sigma - float, error on the intercept of the line and the x axis.
+            c_y_sigma - float, error on the intercept of the line and the y axis.
+        
+        Returns:
+            sigma_dist - float, error on the impact parameter.
         '''
+
+
         sigma_fit_x = self.z_arr * (m_x_sigma / m_x) + c_x_sigma
         sigma_fit_y = self.z_arr * (m_y_sigma / m_y) + c_y_sigma
 

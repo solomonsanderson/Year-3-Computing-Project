@@ -28,8 +28,8 @@ if __name__ == "__main__":
     velo_detect = velo(z_left_sensors, z_right_sensors) # creating a velo object
     z_all = np.concatenate([z_left_sensors, z_right_sensors])
 
-    ax3d = plt.figure().add_subplot(projection="3d")
-    plot_sensor_3d(ax3d)
+    ax3d = plt.figure().add_subplot(projection="3d")  # creating a 3d mpl axis
+    plot_sensor_3d(ax3d)  # plotting the sensor on the 3d axis.
 
     # Formatting 3d plot axes
     ax3d.set_xlabel("z"), ax3d.set_ylabel("x"), ax3d.set_zlabel("y")
@@ -44,10 +44,6 @@ if __name__ == "__main__":
 
     ax3d.legend(handles = legend_elements)
 
-    particles = velo_detect.uniform_particle_generate((0, 2 * np.pi), (4,4), 10000)[0]  # Generates 50 particles with a pseudo rapidity of 4
-    reconstruction_eff, reconstruction_hits = velo_detect.recon_eff()
-    print(f"reconstruction efficiency {reconstruction_eff}")
-
     # reconstruction efficiency as a function of pseudorapidity
     zero_etas, zero_effs = velo_detect.recon_eta([-7.5, 7.5], ([0, 0], [0, 0], [0, 0]))  # origin
     etas, effs = velo_detect.recon_eta([-10, 10], ([-15e-6, 15e-6], [-15e-6, 15e-6], [-60, 60]))  # region
@@ -57,6 +53,7 @@ if __name__ == "__main__":
     ax_eff.plot(zero_etas, zero_effs
     , color="blue", alpha = 0.5, label="Origin")
     ax_eff.plot(etas, effs, color="red", alpha = 0.5, label="Random")
+    # Formatting plot
     ax_eff.legend()
     ax_eff.set_xlabel("Pseudorapdidity, $\eta$")
     ax_eff.set_ylabel("Reconstruction Efficiency")
@@ -72,14 +69,14 @@ if __name__ == "__main__":
     uniform_particles, phi_values, eta_values = velo_detect.uniform_particle_generate((0, 2  * np.pi), (-7.5, 7.5), 10000 , ([-15e-6, 15e-6], [-15e-6, 15e-6], [-63, 63]))
     for count, particle_ in enumerate(uniform_particles):
         particle_.set_pmag(10)  # setting the particles total momentum in GeV
-        hits = velo_detect.hits(particle_)
+        hits = velo_detect.hits(particle_)  # getting coordinates of particle hits
         if len(hits) >= 3:
-            # ax3d.plot(particle_.z_arr, particle_.x_arr,  particle_.y_arr,  marker=None, alpha=0.5, color="green")
+            # ax3d.plot(particle_.z_arr, particle_.x_arr,  particle_.y_arr,  marker=None, alpha=0.5, color="green")  # uncomment to plot
             z, x, y = np.array(hits)[:,0].flatten(), np.array(hits)[:,1].flatten(), np.array(hits)[:,2].flatten()
-            fit_result  = fit_3d(z, x, y, plot=False)
+            fit_result  = fit_3d(z, x, y, plot=False)  # fitting a straight line to the hits
 
-            p_t = particle_.transverse_momentum(*fit_result[0:2], 10)
-            sigma_p_t = particle_.p_resolution(*fit_result[0:4])
+            p_t = particle_.transverse_momentum(*fit_result[0:2], 10)  # calculating the transverse momentum
+            sigma_p_t = particle_.p_resolution(*fit_result[0:4])  # calculating the resolution of p_t
             true_p_t = (particle_.p_arr[0] ** 2 +  particle_.p_arr[1] ** 2 ) ** 0.5  # calculating the momentum from the initial momentum values.
             true_p_ts.append(true_p_t)
 
@@ -94,6 +91,8 @@ if __name__ == "__main__":
     hist_fig, hist_ax = plt.subplots(1)
 
     print(f"momentum mean = {np.mean(p_ts)} +/- {np.mean(sigmas)}")
+
+    # histogram of the error on p_t
     hist_ax.hist(sigmas/p_ts, bins = 100 , range=(-1e-5, 1e-5))
     hist_ax.set_xlabel("Error on $p_T$")
     hist_ax.set_ylabel("Count")
@@ -101,46 +100,50 @@ if __name__ == "__main__":
 
     pt_fig, pt_ax = plt.subplots(2)
 
+    # bar chart of p_t vs eta
     eta_lo = np.min(etas)
     eta_hi = np.max(etas)
     n_bins = 96
 
-    width = (eta_hi - eta_lo)/n_bins
+    width = (eta_hi - eta_lo)/n_bins  # calculating bin width
     bins = [eta_lo + i*width for i in range(n_bins + 1)]
-    bin_centres = [(bins[i] + bins[i+1])/2 for i in range(len(bins) -1 )]
+    bin_centres = [(bins[i] + bins[i+1])/2 for i in range(len(bins) -1 )]  # calculating positions of bin centres
 
-    indices  = np.digitize(etas, bins) #< 100 indices 1
-    pt_plot = np.zeros(n_bins)
+    indices  = np.digitize(etas, bins)  # returns the indices of the bins in which every input belongs
+    pt_plot = np.zeros(n_bins) 
     events_per_bin = np.zeros(n_bins, dtype=float)
     true_pt_plot = np.zeros(n_bins)
     true_events_per_bin = np.zeros(n_bins, dtype=float)
 
+    #  Counting the events in each bin
     for i, index in enumerate(indices):
         pt_plot[index - 2] += p_ts[i]
         events_per_bin[index - 2] += 1
         true_pt_plot[index - 2] += true_p_ts[i]
         true_events_per_bin[index - 2] += 1
     
+    
+    pt_ax[0].bar(bin_centres, pt_plot / events_per_bin, width=width, align="center", alpha=0.5, label = "fitted")  # fitted p_t
+    pt_ax[0].bar(bin_centres, true_pt_plot / true_events_per_bin, width=width, align="center", alpha=0.5, label="true")  # generated p_t
 
-    pt_ax[0].bar(bin_centres, pt_plot / events_per_bin, width=width, align="center", alpha=0.5, label = "fitted")
-    pt_ax[0].bar(bin_centres, true_pt_plot / true_events_per_bin, width=width, align="center", alpha=0.5, label="true")
-
+    # formatting plot
     pt_ax[0].set_ylabel("$\sigma_{P_T}/$")
     pt_ax[0].set_xlabel("$\eta$")
     pt_ax[0].legend()
     pt_fig.tight_layout()
     pt_ax[0].set_title("Plot of $P_T$ against $\eta$. With 10000 Points")
 
+    # plotting phi against p_t
     phi_lo = 0
     phi_hi = 2 * np.pi
     n_bins = 96
 
-    width = (phi_hi - phi_lo)/n_bins
-    bins = [phi_lo + i*width for i in range(n_bins + 1)]
-    bin_centres = [(bins[i] + bins[i+1])/2 for i in range(len(bins) -1 )]
+    width = (phi_hi - phi_lo)/n_bins  # calculating bin width
+    bins = [phi_lo + i*width for i in range(n_bins + 1)]  
+    bin_centres = [(bins[i] + bins[i+1])/2 for i in range(len(bins) -1 )]  # calculating position of bins
 
 
-    indices  = np.digitize(phis, bins) #< 100 indices 1
+    indices  = np.digitize(phis, bins)
     pt_plot = np.zeros(n_bins)
     events_per_bin = np.zeros(n_bins, dtype=float)
 
@@ -149,7 +152,7 @@ if __name__ == "__main__":
         pt_plot[index - 2] += p_ts[i]
         events_per_bin[index - 2] += 1
 
-
+    
     pt_ax[1].bar(bin_centres, pt_plot / events_per_bin, width=width, align="center")
 
     pt_ax[1].set_ylabel("$P_T$")
@@ -163,16 +166,22 @@ if __name__ == "__main__":
     print(f"range reconstruction efficiency {reconstruction_eff}")
 
     # print(len(velo_detect.particles))
-    velo_detect.uniform_particle_generate((0, 2  * np.pi), (-7.5, 7.5), 1000 , ([0, 0], [0, 0], [0, 0]))
+    velo_detect.uniform_particle_generate((0, 2  * np.pi), (-7.5, 7.5), 10000 , ([0, 0], [0, 0], [0, 0]))
     ips = []
     sigma_ips = []
     
     for par in velo_detect.particles[2:]:
         # ax3d.plot(par.z_arr, par.x_arr,  par.y_arr,  marker=None, alpha=0.5, color="green")
         # ax3d.scatter(par.z_0, par.x_0, par.y_0 , color="orange")
-        ips.append(par.impact_parameter(*fit_result[0:2], *fit_result[4:6]))
-        sigma_ips.append(par.ip_resolution(*fit_result))
+        hits = velo_detect.hits(par)
+        if len(hits)>=3:
+            z, x, y = np.array(hits)[:,0].flatten(), np.array(hits)[:,1].flatten(), np.array(hits)[:,2].flatten()
+            fit_result  = fit_3d(z, x, y, plot=False)
+            ips.append(par.impact_parameter(*fit_result[0:2], *fit_result[4:6]))
+            sigma_ips.append(par.ip_resolution(*fit_result))
 
+    # print(ips)
+    # print(sigma_ips)
     print(f"IP mean {np.mean(ips)} +/- {np.mean(sigma_ips)}")
     # print(sigma_ips) # likely incorrect
     ip_fig, ip_ax = plt.subplots(1)
@@ -184,7 +193,6 @@ if __name__ == "__main__":
     width = (ip_hi - ip_lo)/n_bins
     bins = [ip_lo + i*width for i in range(n_bins + 1)]
     bin_centres = [(bins[i] + bins[i+1])/2 for i in range(len(bins) -1 )]
-
     indices  = np.digitize(ips, bins) #< 100 indices 1
     ip_plot = np.zeros(n_bins)
     events_per_bin = np.zeros(n_bins, dtype=float)
@@ -195,10 +203,10 @@ if __name__ == "__main__":
         ip_plot[index - 2] += ips[i]
         events_per_bin[index - 2] += 1
         true_events_per_bin[index - 2] += 1
-    
 
-    # ip_ax.bar(bin_centres, ip_plot / events_per_bin, width=width, align="center", alpha=0.5, label = "fitted", color="green")
-    ip_ax.hist(ips)
+    ip_ax.bar(bin_centres, ip_plot / events_per_bin, width=width, align="center", alpha=0.5, label = "fitted", color="green")
+    ip_ax.set_title("Impact Parameter")
+    # ip_ax.hist(ips)
     # pt_ax[0].bar(bin_centres, true_pt_plot / true_events_per_bin, width=width, align="center", alpha=0.5, label="true")
 
 
