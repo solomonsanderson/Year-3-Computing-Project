@@ -24,7 +24,7 @@ class particle:
         p_z - float, the initial momentum in the z direction.
         x_0 - float, the initial position in the x direction.
         y_0 - float, the initial position in the y direction.
-        z_0 - float, the initial position in the z direction.
+        z_0 - float, the initial position in the z direction.]
         '''
 
 

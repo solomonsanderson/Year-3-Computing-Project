@@ -32,6 +32,8 @@ def cuboid_data2(o, size=(1,1,1)):
         cuboid.
 
     '''
+
+    
     # 3d array/ ,atric representing the corners of the cube
     X = [[[0, 1, 0], [0, 0, 0], [1, 0, 0], [1, 1, 0]],
          [[0, 0, 0], [0, 0, 1], [1, 0, 1], [1, 0, 0]],
@@ -59,6 +61,8 @@ def plotCubeAt2(positions,sizes=None,colors=None, **kwargs):
     Returns:
         Poly3DCollection - Collection of matplotlib 3D objects.
     '''
+
+
     if not isinstance(colors,(list,np.ndarray)): colors=["C0"]*len(positions)  # checks colors is a tuple of a list and an array.
     if not isinstance(sizes,(list,np.ndarray)): sizes=[(1,1,1)]*len(positions)  # as above for sizes.
     g = []

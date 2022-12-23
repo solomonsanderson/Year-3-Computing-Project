@@ -2,7 +2,12 @@
 The main file of my project where all of the other files are called from and
 used. 
 
-This file outputs...
+This file outputs the following:
+    - A plot of reconsturction efficiency for particles generated at the origin
+    vs those generated over random x y and z values.
+    - Values for the transverse momentum of our particle and its resolution.
+    - The impact parameter and its resolution.
+    - A 3d plot of the particles and the sensor.
 '''
 
 

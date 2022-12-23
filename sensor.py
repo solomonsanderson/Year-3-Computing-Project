@@ -48,6 +48,7 @@ def plot_sensor(x, y, axis):
 
     
     # Right Detector
+    # Plotting lines for left hand detector
     axis.plot([5.1, 33.26], [-5.1, -5.1], color="red")
     axis.plot([5.1, 33.26], [33.51, 33.51], color="red")
     axis.plot([5.1,5.1], [-5.1,33.51], color="red")
@@ -58,6 +59,7 @@ def plot_sensor(x, y, axis):
     axis.plot([37.41, 37.41], [-33.51, -5.1], color="red")
 
     # Left Detector
+    # Plotting lines for right hand detector
     axis.plot([-5.1, -33.26], [5.1, 5.1], color="blue")
     axis.plot([-5.1, -33.26], [-33.51, -33.51], color="blue")
     axis.plot([-5.1, -5.1], [5.1, -33.51], color="blue")
@@ -140,6 +142,8 @@ class right_sensor():
         Returns:
             None.
          '''
+
+
         self.z_pos = z_pos
 
 

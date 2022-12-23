@@ -53,7 +53,11 @@ def line(x, m, c):
     Args:
         x - float/ array, the x values over which the line is defined.
         m - float, the gradient of the line.
-        c - float, the y-intercept of the line '''
+        c - float, the y-intercept of the line.
+    
+    Returns:
+        y - float/ array, the y values resulting from given values of m, x and
+        c.  '''
 
     y = m * x + c
     return y
@@ -66,8 +70,10 @@ def fit_3d(z, x, y, plot = False):
         z - list/array, a list or array of z values to be fitted
         x - list/ array, a list or array of x values to be fitted.
         y - list/array, a list or array of y values to be fitted.
-    
-    returns: 
+        plot - bool, If this is true a plot of the straight line fit will be
+        shown.
+
+    Returns: 
         m_x - gradient output by a straight-line fit to data in the xz plane.
         m_y - gradient output by a straight-line fit to data in the yz plane.
         m_x_sigma - error on the value m_x, given by the curve_fit covariance 
@@ -133,6 +139,7 @@ class velo:
         sensors of the detector.
         zs - numpy array, a numpy array containing the z values of both the left 
         and right sensors.  
+        particles - array, an array of the generated particle objects.
     '''
 
 
@@ -171,10 +178,15 @@ class velo:
         of them. Randomly smears particle position with Gaussian distribution 
         to simulate resolution of detector. 
         
-        Args: particle particle object to be checked for a sensor hit.
+        Args: 
+            particle - particle object to be checked for a sensor hit.
             hit_efficiency - float, the percentage chance that the particle is
             detected by the sensor. default: 98.
-            hit_resolution - float, the resolution of the sensors. '''
+            hit_resolution - float, the resolution of the sensors in mm.
+            default: 0.012 mm.
+        
+        Returns
+            hits - an array of xyz positions of the particle hits.'''
 
 
         particle.xy_pos(self.zs)
@@ -218,15 +230,17 @@ class velo:
             generated with.
             number - int, the number of particle objects to be created.
             pseudo_rapidity - int/ float, the pseudo rapidity of the desired particles.
-            z - array/ int, the z positions of the sensors.
+            start_pos_range - tuple of lists, the x, y and z ranges in which
+            random uniform values for the start position are generated.
+            default: (0, 0, 0).
 
         Returns:
-            particles - list, A list of particle objects, created using the 
+            self.particles - list, A list of particle objects, created using the 
             particle class.
             phi_values - numpy array, An array of the phi values of the generated
             particles.
             eta_values - numpy array, An array of the eta values of the generated 
-            particles
+            particles.
         '''
 
 
@@ -258,11 +272,13 @@ class velo:
         ''' Calculates the reconstruction efficiency for a given set of particles.
 
         Args:
-            particles - list, A list of particle objects.
+            None.
 
         Returns:
             efficiency - float, the reconstruction efficency of the given set 
             of particles.
+            reconstructed_hits - array, an array containing arrays of the hit
+            positions for each reconstructed particle.
         '''
 
 
