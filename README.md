@@ -5,7 +5,7 @@ This repository contains the code from my Year 3 Particle Physics Computing labo
 
 In this laboratory I aimed to model the vertex locator (VELO) at LHCb, CERN. This can be seen on the diagram below:
 
-<img src="media\cern detector.png">
+<img src="media/cern detector.png">
 
 This simulation accounted for numerous effects:
 * The resolution of the detector, simulated using random gaussian numbers. 
@@ -23,8 +23,8 @@ The files are as follows:
 
 * `sensor.py` - Contains classes for the left and right sensors of the VELO detector. Contains methods which return whether or not a particle is in a sensor. Also contains a function for creating the 3d plots, some examples are below: 
 
-<img src="media\tracks_varied_eta.png">
-<img src="media\tracks_varied_phi.png">
+<img src="media/tracks_varied_eta.png">
+<img src="media/tracks_varied_phi.png">
 
 
 
